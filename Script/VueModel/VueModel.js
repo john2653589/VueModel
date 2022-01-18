@@ -1,5 +1,5 @@
 ﻿/**
- *  VueModel.js v1.7.3
+ *  VueModel.js v1.7.5
  *  From Rugal Tu
  *  Based on Vue.js v2.6.12、jQuery Library v3.5.1
  * */
@@ -201,7 +201,7 @@ class VueModel {
     AddV_Model(ObjectId, Key = undefined) {
         Key ??= 'Result';
         ObjectId = this.ToJQueryName(ObjectId);
-        $(ObjectId).attr('v-model', Key);
+        $(ObjectId).attr('v-model', Key.replaceAll('_', ''));
         return this;
     }
 
@@ -211,7 +211,7 @@ class VueModel {
      * @param {any} Key 若為 undefined 則使用 Result 作為 Key 值
      */
     AddV_Text(ObjectId, Key = undefined) {
-        Key ??= 'Result';
+        Key ??= `Result.${ObjectId.replace('_', '')}`;
         ObjectId = this.ToJQueryName(ObjectId);
         $(ObjectId).attr('v-text', Key);
         return this;
@@ -319,42 +319,39 @@ class VueModel {
      * 加入一個 {Url} 至 VueResult[SelectId] 存放區，使用 'AddV_SelectBind()'
      * @param {any} SelectId 不得為 undefined
      * @param {any} Url 不得為 undefined
-     * @param {any} V_Model 選擇結果，若為 undefined 則使用 Result.{SelectId} 作為 v-model= {V_Model} 值
-     * @param {any} V_ForIn Option參數，若為 undefined 則使用 'Item' 作為 v-for= {V_ForIn} in 值
-      * @param {any} V_Text 選項字樣，若為 undefined 則使用 'Item' 作為 v-text= {V_Text} 值，若不為 'Item' 且不包含 ('.') 則自動套用 '{V_ForIn}.{V_Text}'
      * @param {any} V_Value 選項值，若為 undefined 則使用 'Item' 作為 v-value= {V_Value} 值，若不為 'Item' 且不包含 ('.') 則自動套用 '{V_ForIn}.{V_Value}'
-     * @param {any} V_ForKey Option綁定來源，若為 undefined 則使用 {SelectId} 作為 v-for= in {V_ForKey} 值
+     * @param {any} V_Text 選項字樣，若為 undefined 則使用 'Item' 作為 v-text= {V_Text} 值，若不為 'Item' 且不包含 ('.') 則自動套用 '{V_ForIn}.{V_Text}'
+     * @param {any} V_Model 選擇結果，若為 undefined 則使用 Result.{SelectId} 作為 v-model= {V_Model} 值
      */
-    AddV_Select(SelectId, Url, V_Model = undefined, V_ForIn = undefined, V_Text = undefined, V_Value = undefined, V_ForKey = undefined) {
-        this.AddVue(SelectId, Url);
-        this.AddV_SelectBind(SelectId, V_Model, V_ForIn, V_Text, V_Value, V_ForKey);
+    AddV_Select(SelectId, Url = '', V_Value = undefined, V_Text = undefined, V_Model = undefined) {
+        if (Url != undefined && Url != '')
+            this.AddVue(SelectId, Url);
+        this.AddV_SelectBind(SelectId, V_Value, V_Text, V_Model);
         return this;
     }
 
     /**
      * 加入 Vue 屬性至指定 DOM {SelectId} Attr，並設定 'v-model'、'v-for'、'v-text'、'v-value'
      * @param {any} SelectId 不得為 undefined
-     * @param {any} V_Model 選擇結果，若為 undefined 則使用 Result.{SelectId} 作為 v-model= {V_Model} 值
-     * @param {any} V_ForIn Option參數，若為 undefined 則使用 'Item' 作為 v-for= {V_ForIn} in 值
-     * @param {any} V_Text 選項字樣，若為 undefined 則使用 'Item' 作為 v-text= {V_Text} 值，若不為 'Item' 且不包含 ('.') 則自動套用 '{V_ForIn}.{V_Text}'
      * @param {any} V_Value 選項值，若為 undefined 則使用 'Item' 作為 v-value= {V_Value} 值，若不為 'Item' 且不包含 ('.') 則自動套用 '{V_ForIn}.{V_Value}'
+     * @param {any} V_Text 選項字樣，若為 undefined 則使用 'Item' 作為 v-text= {V_Text} 值，若不為 'Item' 且不包含 ('.') 則自動套用 '{V_ForIn}.{V_Text}'
+     * @param {any} V_Model 選擇結果，若為 undefined 則使用 Result.{SelectId} 作為 v-model= {V_Model} 值
      * @param {any} V_ForKey Option綁定來源，若為 undefined 則使用 {SelectId} 作為 v-for= in {V_ForKey} 值
      */
-    AddV_SelectBind(SelectId, V_Model = undefined, V_ForIn = undefined, V_Text = undefined, V_Value = undefined, V_ForKey = undefined) {
+    AddV_SelectBind(SelectId, V_Value = undefined, V_Text = undefined, V_Model = undefined, V_ForKey = undefined) {
 
-        V_Model ??= `Result.${SelectId}`;
+        let V_ForIn = `Item`;
+        V_Text ??= `Item`;
+        V_Value ??= `Item`;
+        V_Model ??= `Result.${V_Value != 'Item' ? V_Value : SelectId.replaceAll('_', '')}`;
+
         if (!V_Model.includes('.'))
             V_Model = `Result.${V_Model}`;
 
+        V_ForKey ??= `${SelectId}`.replaceAll('#', '');
+
         SelectId = this.ToJQueryName(SelectId);
-        let SelectObj = $(SelectId);
-
-        SelectObj.attr('v-model', V_Model);
-
-        V_ForKey ??= `${SelectId}`.replace('#', '');
-        V_ForIn ??= `Item`;
-        V_Text ??= `Item`;
-        V_Value ??= `Item`;
+        this.AddV_Model(SelectId, V_Model);
 
         if (!V_Text.includes('Item') && !V_Text.includes('.'))
             V_Text = `${V_ForIn}.${V_Text}`;
@@ -368,6 +365,8 @@ class VueModel {
             'v-text': `${V_Text}`,
             ':value': `${V_Value}`
         });
+
+        let SelectObj = $(SelectId);
         SelectObj.append(OptionObj);
         return this;
     }
@@ -381,14 +380,13 @@ class VueModel {
     AddV_SelectCustom(SelectId, V_Model = undefined, CustomOption = {}) {
 
         SelectId = this.ToJQueryName(SelectId);
-        let SelectObj = $(SelectId);
 
         V_Model ??= `Result.${V_Model}`;
-        SelectObj.attr('v-model', V_Model);
-
+        this.AddV_Model(SelectId, V_Model);
         if (Object.keys(CustomOption).length > 0) {
             let OptionObj = $('<option>');
             this.InsertAttrToJQuery(OptionObj, CustomOption);
+            let SelectObj = $(SelectId);
             SelectObj.append(OptionObj);
         }
         return this;
@@ -401,7 +399,7 @@ class VueModel {
      * @param {any} FuncKey 若為 undefined 則使用 {ButtonId}_Click 作為 v-on:click={Key} 值
      */
     AddV_Button(ButtonId, ClickResult, FuncKey = undefined) {
-        FuncKey ??= `${ButtonId}_Click`;
+        FuncKey ??= `Func${ButtonId}_Click`;
         this.AddFunction(FuncKey, ClickResult, ButtonId, 'click');
         return this;
     }

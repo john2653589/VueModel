@@ -1,0 +1,604 @@
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/css/bootstrap.min.css" integrity="sha384-zCbKRCUGaJDkqS1kPbPd7TveP5iyJE0EjAuZQTgFLD2ylzuqKfdKlfG/eSrtxUkn" crossorigin="anonymous">
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-fQybjgWLrvvRgtW6bFlB7jaZrFsaBXjsOMm/tB9LTS58ONXgqbR9W8oWht/amnpF" crossorigin="anonymous"></script>
+
+<script src="../Script/jquery/dist/jquery.min.js"></script>
+
+<style>
+    pre {
+        font-size: 22px;
+        background-color: black;
+        color: white;
+        padding-left: 50px;
+        margin: 0px;
+    }
+
+    var.Class {
+        color: #4EC9B0;
+    }
+
+    var.Keyword {
+        color: #4892B2;
+    }
+
+    span.String {
+        color: #D39E51;
+    }
+
+    span.Mark {
+        color: red;
+        background-color: transparent;
+    }
+
+    span.HttpGet {
+        color: #4EC9B0;
+    }
+
+    span.HttpPost {
+        color: #B15BFF;
+    }
+
+    span.Remark {
+        color: #55A442;
+    }
+
+    span.Empty {
+        color: white;
+    }
+
+    th {
+        font-size: 22px;
+        text-align: center;
+        width: 300px;
+    }
+
+    td {
+        font-size: 20px;
+        text-align: left;
+    }
+
+    table {
+        border: 1px solid;
+    }
+
+    .BlockDiv {
+        text-align: center;
+    }
+
+    .AreaDiv {
+        margin-top: 20px;
+        padding-top: 20px;
+    }
+
+    .FuncDiv {
+        padding-top: 250px;
+    }
+</style>
+
+<div style="margin:20px">
+    <h1>#Easy to use - VueModel</h1>
+    <div style="font-size:18px">
+        <a href="#Basic">Basic Setting：</a>
+        <a href="#New">1.new</a>
+        <a href="#VueInit">2.VueInit</a>
+        <a href="#AddVue">3.AddVue</a>
+        <a href="#AddSubmit">4.AddSubmit</a>
+        <br />
+        <a href="#CallApi">Call Api：</a>
+        <a href="#Ajax">1.Ajax</a>
+        <a href="#Submit">2.Submit</a>
+        <br />
+        <a href="#AddVDOM">AddV-DOM：</a>
+        <a href="#AddV_Input">1.AddV_Input</a>
+        <a href="#AddV_Text">2.AddV_Text</a>
+        <a href="#AddV_Button">3.AddV_Button</a>
+        <a href="#AddV_Select">4.AddV_Select</a>
+    </div>
+
+    <!-- Basic Setting -->
+    <div class="AreaDiv" style="background-color: #FFE6D9 ">
+        <a name="Basic"><h1 class="BlockDiv">#Basic Setting</h1></a>
+        <!-- new -->
+        <div style="margin:20px">
+            <a name="New"><h2># 1.New 建構子</h2></a>
+            <table>
+                <tbody>
+                    <tr>
+                        <th>方法</th>
+                        <td>VueModel()</td>
+                    </tr>
+                    <tr>
+                        <th>說明</th>
+                        <td>建構子</td>
+                    </tr>
+                    <tr>
+                        <th>參數</th>
+                        <td>_Url, _PageData, _VueOptions, _ElementName, IsMountedShow</td>
+                    </tr>
+                    <tr>
+                        <th>參數解釋</th>
+                        <td>預設Url, 頁面參數, 預設Vue設定, 綁定ElementId, 初始化執行Show()</td>
+                    </tr>
+                </tbody>
+            </table>
+            <h2># 使用方法</h2>
+            <div>
+                <div>
+                    <pre> 
+<var class="Keyword">var</var> Update = <var class="Keyword">new</var> <var class="Class">VueModel</var>(<span class="String">'api/GetData'</span>, {}, {}, <span class="String">'__PageContent:__'</span>, <var class="Keyword">true</var>);
+            </pre>
+                </div>
+
+
+            </div>
+        </div>
+
+        <!-- VueInit -->
+        <div class="FuncDiv" style="margin:20px">
+            <a name="VueInit"><h2># 2.VueInit 初始化</h2></a>
+            <table>
+                <tbody>
+                    <tr>
+                        <th>方法</th>
+                        <td>VueInit()</td>
+                    </tr>
+                    <tr>
+                        <th>說明</th>
+                        <td>初始化VueModel</td>
+                    </tr>
+                    <tr>
+                        <th>參數</th>
+                        <td>無</td>
+                    </tr>
+                    <tr>
+                        <th>參數解釋</th>
+                        <td>無</td>
+                    </tr>
+                </tbody>
+            </table>
+            <h2># 使用方法</h2>
+            <div>
+                <div>
+                    <pre> 
+<var class="Keyword">var</var> Update = <var class="Keyword">new</var> <var class="Class">VueModel</var>(<span class="String">'api/GetData'</span>, {}, {}, <span class="String">'__PageContent:__'</span>, <var class="Keyword">true</var>).<span class="Mark">VueInit()</span>;
+            </pre>
+                </div>
+            </div>
+        </div>
+
+        <!-- AddVue -->
+        <div class="FuncDiv" style="margin:20px">
+            <a name="AddVue"><h2># 3.AddVue 加入<span class="HttpGet">[HttpGet]</span>Key</h2></a>
+            <table>
+                <tbody>
+                    <tr>
+                        <th>方法</th>
+                        <td>AddVue()</td>
+                    </tr>
+                    <tr>
+                        <th>說明</th>
+                        <td>加入一個Key至Vue存放區，並加入<span class="HttpGet">[HttpGet]</span>Url至HttpGet存放區</td>
+                    </tr>
+                    <tr>
+                        <th>參數</th>
+                        <td>Key, Url</td>
+                    </tr>
+                    <tr>
+                        <th>參數解釋</th>
+                        <td>Key名稱, <span class="HttpGet">[HttpGet]</span>Url</td>
+                    </tr>
+                </tbody>
+            </table>
+            <h2># 使用方法</h2>
+            <div>
+                <div>
+                    <pre> 
+<var class="Keyword">var</var> Update = <var class="Keyword">new</var> <var class="Class">VueModel</var>(<span class="String">'api/GetData'</span>, {}, {}, <span class="String">'__PageContent:__'</span>, <var class="Keyword">true</var>)
+        .<span class="Mark">AddVue(<span class="String">'GetData'</span>,<span class="String">'api/GetData'</span>)</span>;
+            </pre>
+                </div>
+            </div>
+        </div>
+
+        <!-- AddSubmit -->
+        <div class="FuncDiv" style="margin:20px">
+            <a name="AddSubmit"><h2># 4.AddSubmit 加入<span class="HttpPost">[HttpPost]</span>Key</h2></a>
+            <table>
+                <tbody>
+                    <tr>
+                        <th>方法</th>
+                        <td>AddSubmit()</td>
+                    </tr>
+                    <tr>
+                        <th>說明</th>
+                        <td>加入<span class="HttpPost">[HttpPost]</span>Url至HttpPost存放區</td>
+                    </tr>
+                    <tr>
+                        <th>參數</th>
+                        <td>Key, Url, OnSuccess, OnError, OnComplate</td>
+                    </tr>
+                    <tr>
+                        <th>參數解釋</th>
+                        <td>
+                            Key名稱,
+                            <span class="HttpPost">[HttpGet]</span>Url,
+                            Ajax 成功,
+                            Ajax 錯誤,
+                            Ajax 完成,
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <h2># 使用方法</h2>
+            <div>
+                <div>
+                    <pre> 
+<var class="Keyword">var</var> Update = <var class="Keyword">new</var> <var class="Class">VueModel</var>(<span class="String">'api/GetData'</span>, {}, {}, <span class="String">'__PageContent:__'</span>, <var class="Keyword">true</var>)
+        .<span class="Mark">AddSubmit(<span class="String">'SendData'</span>,<span class="String">'api/SendData'</span>,<span class="Empty">() => SuccessFunc()</span>)</span>;
+            </pre>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Call Api -->
+    <div class="AreaDiv" style="background-color: #BBFFFF ">
+        <a name="CallApi"><h1 class="BlockDiv">#Call Api</h1></a>
+        <!-- Ajax -->
+        <div style="margin:20px">
+            <a name="Ajax"><h2># 1.Ajax HttpGet</h2></a>
+            <table>
+                <tbody>
+                    <tr>
+                        <th>方法</th>
+                        <td>Ajax()</td>
+                    </tr>
+                    <tr>
+                        <th>說明</th>
+                        <td>
+                            發送<span class="HttpGet"> HttpGet </span>請求並執行VueInit()初始化
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>參數</th>
+                        <td>
+                            SendData,
+                            Key,
+                            MethodType,
+                            OnSuccess,
+                            OnError,
+                            OnComplate
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>參數解釋</th>
+                        <td>
+                            傳送參數,
+                            Url Key,
+                            Api類型,
+                            Ajax 成功,
+                            Ajax 錯誤,
+                            Ajax 完成,
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h2># 使用方法</h2>
+            <div>
+                <div>
+                    <pre> 
+<var class="Keyword">var</var> Update = <var class="Keyword">new</var> <var class="Class">VueModel</var>(<span class="String">'api/GetData'</span>, {}, {}, <span class="String">'__PageContent:__'</span>, <var class="Keyword">true</var>)
+        .<span class="Mark">Ajax(<span class="Empty">{ Id: <span class="String">'abc-def-ghi-jkl'</span> }</span>, <span class="String">'GetData'</span>, <span class="String">'GET'</span>, <span class="Empty">() => SuccessFunc()</span>)</span>;
+                    </pre>
+                </div>
+            </div>
+
+            <h2># 使用方法2</h2>
+            <div>
+                <div>
+                    <pre> 
+<var class="Keyword">var</var> Update = <var class="Keyword">new</var> <var class="Class">VueModel</var>(<span class="String">'api/GetData'</span>, {}, {}, <span class="String">'__PageContent:__'</span>, <var class="Keyword">true</var>)
+        .<span class="Mark">Ajax()</span>;
+                    <span class="Remark">//SenData 預設 undefined</span>
+                    <span class="Remark">//Key 預設 Url 'api/GetData'</span>
+                    <span class="Remark">//MethodType 預設 'GET'</span>
+                    </pre>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Submit -->
+        <div class="FuncDiv" style="margin:20px">
+            <a name="Submit"><h2># 2.Submit HttpPost</h2></a>
+            <table>
+                <tbody>
+                    <tr>
+                        <th>方法</th>
+                        <td>Submit()</td>
+                    </tr>
+                    <tr>
+                        <th>說明</th>
+                        <td>
+                            發送<span class="HttpPost"> HttpPost </span>請求並執行SuccessBackPage()，如不為undefined
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>參數</th>
+                        <td>
+                            Key,
+                            MethodType,
+                            SendParam,
+                            _OnSuccess,
+                            _OnError,
+                            _OnComplate
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>參數解釋</th>
+                        <td>
+                            Url Key,
+                            Api類型,
+                            傳送參數,
+                            Ajax 成功,
+                            Ajax 錯誤,
+                            Ajax 完成,
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h2># 使用方法</h2>
+            <div>
+                <div>
+                    <pre> 
+<var class="Keyword">var</var> Update = <var class="Keyword">new</var> <var class="Class">VueModel</var>(<span class="String">''</span>, {}, {}, <span class="String">'__PageContent:__'</span>, <var class="Keyword">true</var>)
+        .<span class="Mark">Submit(<span class="String">'Login'</span>, <span class="String">'POST'</span>, <span class="Empty">Update.Result</span>, <span class="Empty">() => SuccessFunc()</span>)</span>;
+                    </pre>
+                </div>
+            </div>
+
+            <h2># 使用方法2</h2>
+            <div>
+                <div>
+                    <pre> 
+<var class="Keyword">var</var> Update = <var class="Keyword">new</var> <var class="Class">VueModel</var>(<span class="String">''</span>, {}, {}, <span class="String">'__PageContent:__'</span>, <var class="Keyword">true</var>)
+        .<span class="Mark">Submit()</span>;
+                    <span class="Remark">//Key 預設 Url，即 AddSubmit(undefined, 'api/Login')</span>
+                    <span class="Remark">//MethodType 預設 'POST'</span>
+                    <span class="Remark">//SendParam 預設 VueModel.Result</span>
+                    </pre>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- AddV-DOM -->
+    <div class="AreaDiv" style="background-color: #9999CC ">
+        <a name="AddVDOM"><h1 class="BlockDiv">#AddV-DOM </h1></a>
+        <!-- AddV_Input -->
+        <div style="margin:20px">
+            <a name="AddV_Input"><h2># 1.Input</h2></a>
+            <table>
+                <tbody>
+                    <tr>
+                        <th>方法</th>
+                        <td>AddV_Input()</td>
+                    </tr>
+                    <tr>
+                        <th>說明</th>
+                        <td>
+                            將InputId綁定至Vue存放區，使用 v-model 屬性
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>參數</th>
+                        <td>
+                            <span class="Mark">InputId</span>,
+                            InputV_Model
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>參數解釋</th>
+                        <td>
+                            DOM 物件 id,
+                            綁定資料來源，預設為Result.<span class="Mark">{InputId}</span>,
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h2># 使用方法</h2>
+            <div>
+                <div>
+                    <pre> 
+<var class="Keyword">var</var> Update = <var class="Keyword">new</var> <var class="Class">VueModel</var>(<span class="String">'api/GetData'</span>, {}, {}, <span class="String">'__PageContent:__'</span>, <var class="Keyword">true</var>)
+        .<span class="Mark">AddV_Input(<span class="String">'__UserName__'</span>, <span class="String">'Result.UserName'</span>)</span>;
+                    </pre>
+                </div>
+            </div>
+
+            <h2># 使用方法2</h2>
+            <div>
+                <div>
+                    <pre> 
+<var class="Keyword">var</var> Update = <var class="Keyword">new</var> <var class="Class">VueModel</var>(<span class="String">'api/GetData'</span>, {}, {}, <span class="String">'__PageContent:__'</span>, <var class="Keyword">true</var>)
+        .<span class="Mark">AddV_Input(<span class="String">'__UserName__'</span>)</span>;
+                    <span class="Remark">//InputV_Model 預設為 Result.{InputId} 即 Result.UserName</span>
+
+                    </pre>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- AddV_Text -->
+        <div class="FuncDiv" style="margin:20px">
+            <a name="AddV_Text"><h2># 2.Text</h2></a>
+            <table>
+                <tbody>
+                    <tr>
+                        <th>方法</th>
+                        <td>AddV_Text()</td>
+                    </tr>
+                    <tr>
+                        <th>說明</th>
+                        <td>
+                            將ObjectId綁定至Vue存放區，使用 v-text 屬性
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>參數</th>
+                        <td>
+                            <span class="Mark">ObjectId</span>,
+                            Key
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>參數解釋</th>
+                        <td>
+                            DOM 物件 id,
+                            綁定資料來源，預設為Result.<span class="Mark">{ObjectId}</span>,
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h2># 使用方法</h2>
+            <div>
+                <div>
+                    <pre> 
+<var class="Keyword">var</var> Update = <var class="Keyword">new</var> <var class="Class">VueModel</var>(<span class="String">'api/GetData'</span>, {}, {}, <span class="String">'__PageContent:__'</span>, <var class="Keyword">true</var>)
+        .<span class="Mark">AddV_Text(<span class="String">'__UserName__'</span>, <span class="String">'Result.UserName'</span>)</span>;
+                    </pre>
+                </div>
+            </div>
+
+            <h2># 使用方法2</h2>
+            <div>
+                <div>
+                    <pre> 
+<var class="Keyword">var</var> Update = <var class="Keyword">new</var> <var class="Class">VueModel</var>(<span class="String">'api/GetData'</span>, {}, {}, <span class="String">'__PageContent:__'</span>, <var class="Keyword">true</var>)
+        .<span class="Mark">AddV_Text(<span class="String">'__UserName__'</span>)</span>;
+                    <span class="Remark">//Key 預設為 Result.{ObjectId} 即 Result.UserName(自動移除'_')</span>
+
+                    </pre>
+                </div>
+            </div>
+        </div>
+
+        <!-- AddV_Button -->
+        <div class="FuncDiv" style="margin:20px">
+            <a name="AddV_Button"><h2># 3.Button</h2></a>
+            <table>
+                <tbody>
+                    <tr>
+                        <th>方法</th>
+                        <td>AddV_Button()</td>
+                    </tr>
+                    <tr>
+                        <th>說明</th>
+                        <td>
+                            將ButtonId綁定至Vue存放區，並使用 AddFunction 方法加入 click 事件
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>參數</th>
+                        <td>
+                            <span class="Mark">ButtonId</span>,
+                            ClickResult,
+                            FuncKey
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>參數解釋</th>
+                        <td>
+                            DOM 物件 id,
+                            綁定 click 事件,
+                            click 事件名稱 預設為 Func<span class="Mark">{ButtonId}</span>_Click,
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h2># 使用方法</h2>
+            <div>
+                <div>
+                    <pre> 
+<var class="Keyword">var</var> Update = <var class="Keyword">new</var> <var class="Class">VueModel</var>(<span class="String">'api/GetData'</span>, {}, {}, <span class="String">'__PageContent:__'</span>, <var class="Keyword">true</var>)
+        .<span class="Mark">AddV_Button(<span class="String">'__BtnSubmit__'</span>, <span class="Empty">Update.Submit()</span>)</span>;
+                    </pre>
+                </div>
+            </div>
+        </div>
+
+        <!-- AddV_Select -->
+        <div class="FuncDiv" style="margin:20px">
+            <a name="AddV_Select"><h2># 4.Select</h2></a>
+            <table>
+                <tbody>
+                    <tr>
+                        <th>方法</th>
+                        <td>AddV_Select()</td>
+                    </tr>
+                    <tr>
+                        <th>說明</th>
+                        <td>
+                            將SelectId綁定至Vue存放區，使用 AddVue() 方法加入 Url 網址，使用 AddV_SelectBind() 綁定 Select 欄位
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>參數</th>
+                        <td>
+                            SelectId,
+                            Url,
+                            V_Value,
+                            V_Text,
+                            V_Model,
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>參數解釋</th>
+                        <td>
+                            DOM 物件 id,
+                            設定網址,
+                            Option值,
+                            Option顯示字,
+                            選取Option存放區,
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h2># 使用方法</h2>
+            <div>
+                <div>
+                    <pre> 
+<var class="Keyword">var</var> Update = <var class="Keyword">new</var> <var class="Class">VueModel</var>(<span class="String">'api/GetData'</span>, {}, {}, <span class="String">'__PageContent:__'</span>, <var class="Keyword">true</var>)
+        .<span class="Mark">AddV_Select(<span class="String">'__SelectCity__'</span>, <span class="String">'api/GetCity'</span>, <span class="String">'CityId'</span>, <span class="String">'CityName'</span>, <span class="String">'Result.CityId'</span>)</span>;
+                    </pre>
+                </div>
+            </div>
+
+            <h2># 使用方法2</h2>
+            <div>
+                <div>
+                    <pre> 
+<var class="Keyword">var</var> Update = <var class="Keyword">new</var> <var class="Class">VueModel</var>(<span class="String">'api/GetData'</span>, {}, {}, <span class="String">'__PageContent:__'</span>, <var class="Keyword">true</var>)
+        .<span class="Mark">AddV_Select(<span class="String">'__SelectCity__'</span>, <span class="String">'api/GetCity'</span>, <span class="String">'CityId'</span>, <span class="String">'CityName'</span>)</span>;
+                    <span class="Remark">//V_Model 預設為 Result.{V_Value} 即 Result.CityId</span>
+                    </pre>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $("table").attr("class", "table table-sm table-striped table-dark table-hover");
+    $("td").attr("class", "border-right border-left");
+    $("th").attr("class", "border-right border-left");
+</script>
