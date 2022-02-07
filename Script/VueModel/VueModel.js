@@ -205,6 +205,27 @@ class VueModel {
         return this;
     }
 
+    AddV_ModelMult(ObjectIdKey = {}, KeyFor = undefined) {
+
+        let AllKeys = Object.keys(ObjectIdKey);
+        for (let Idx in AllKeys) {
+            let GetKey = AllKeys[Idx];
+            let GetVal = ObjectIdKey[GetKey];
+
+            KeyFor ??= 'Result';
+            if (typeof GetVal != "string" && KeyFor != undefined)
+                GetVal = `${KeyFor}.${GetKey}`;
+            else if (typeof GetVal === "string" && GetVal == '')
+                GetVal = `${KeyFor}.${GetKey}`;
+            else if (typeof GetVal === "string" && !GetVal.toString().includes('.') && KeyFor != undefined)
+                GetVal = `${KeyFor}.${GetVal}`;
+
+            this.AddV_Model(GetKey, GetVal);
+        }
+        return this;
+    }
+
+
     /**
      * 將 'v-text' Vue屬性加入至 ObjectId DOM
      * @param {any} ObjectId 不得為 undefined
