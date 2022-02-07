@@ -658,6 +658,47 @@ class VueModel {
         $.ajax(SubmitOptions);
         return this;
     }
+
+
+    SubmitCustom(Key, AjaxOption = {}) {
+
+        let SuccessBackPage = this.SuccessBackPage;
+
+        let Caller = this;
+
+        Key ??= this.ElementName;
+        let MethodType = 'POST'
+
+        let Param = this.SubmitUrl[Key];
+        let SendUrl = Key == this.ElementName ? this.SubmitUrl[this.ElementName].Url : Param.Url;
+
+        let OnSuccess = Param.OnSuccess;
+        let OnError = Param.OnError;
+        let OnComplate = Param.OnComplate;
+        let SubmitOptions = {
+            type: MethodType,
+            url: SendUrl,
+            success: function (Result) {
+                if (Result.IsSuccess) {
+                    OnSuccess?.call(Caller, Result);
+                    SuccessBackPage?.call(Caller);
+                }
+                else {
+                    alert(Result.Msg);
+                }
+            },
+            error: function (Error) {
+                OnError?.call(Caller, Error);
+                alert('Request 錯誤');
+            },
+            complete: function () {
+                OnComplate?.call(Caller);
+            },
+        };
+        $.extend(SubmitOptions, AjaxOption);
+        $.ajax(SubmitOptions);
+        return this;
+    }
     // #endregion
 
     // #region Event After Ajax
