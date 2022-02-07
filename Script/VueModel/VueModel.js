@@ -1,5 +1,5 @@
 ﻿/**
- *  VueModel.js v1.7.6
+ *  VueModel.js v1.7.7
  *  From Rugal Tu
  *  Based on Vue.js v2.6.12、jQuery Library v3.5.1
  * */
@@ -325,7 +325,7 @@ class VueModel {
      */
     AddV_Select(SelectId, Url = '', V_Value = undefined, V_Text = undefined, V_Model = undefined) {
         if (Url != undefined && Url != '')
-            this.AddVue(SelectId, Url);
+            this.AddVue(SelectId.replaceAll('_', ''), Url);
         this.AddV_SelectBind(SelectId, V_Value, V_Text, V_Model);
         return this;
     }
@@ -348,7 +348,7 @@ class VueModel {
         if (!V_Model.includes('.'))
             V_Model = `Result.${V_Model}`;
 
-        V_ForKey ??= `${SelectId}`.replaceAll('#', '');
+        V_ForKey ??= `${SelectId}`.replaceAll('#', '').replaceAll('_', '');
 
         SelectId = this.ToJQueryName(SelectId);
         this.AddV_Model(SelectId, V_Model);
@@ -531,6 +531,7 @@ class VueModel {
         this.MethodType = MethodType ?? this.MethodType;
 
         Key ??= this.ElementName;
+        Key = Key.replaceAll('_', '');
 
         let Caller = this;
         let SuccessCallback = this.AjaxSuccss;
