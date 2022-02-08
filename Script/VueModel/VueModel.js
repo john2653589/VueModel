@@ -1,5 +1,5 @@
 ﻿/**
- *  VueModel.js v1.7.7
+ *  VueModel.js v1.7.8
  *  From Rugal Tu
  *  Based on Vue.js v2.6.12、jQuery Library v3.5.1
  * */
