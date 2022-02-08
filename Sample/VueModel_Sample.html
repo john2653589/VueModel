@@ -1,0 +1,71 @@
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/css/bootstrap.min.css" integrity="sha384-zCbKRCUGaJDkqS1kPbPd7TveP5iyJE0EjAuZQTgFLD2ylzuqKfdKlfG/eSrtxUkn" crossorigin="anonymous">
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-fQybjgWLrvvRgtW6bFlB7jaZrFsaBXjsOMm/tB9LTS58ONXgqbR9W8oWht/amnpF" crossorigin="anonymous"></script>
+
+<script src="../Script/jquery/dist/jquery.min.js"></script>
+<script src="../Script/Vue/vue.js"></script>
+<script src="../Script/VueModel/VueModel.js"></script>
+
+
+<div id="Test">
+    <div id="TestCheckbox">
+
+    </div>
+    <div id="List">
+        <div id="VForDiv1" class="col-4">
+
+        </div>
+        <div id="VForDiv2" class="col-4">
+
+        </div>
+        <div id="VForDiv3" class="col-4">
+
+        </div>
+        <div id="TestDiv" class="col-4">
+
+        </div>
+
+        <div>
+
+        </div>
+    </div>
+
+    <button onclick="Test()"></button>
+</div>
+
+<script>
+    $('#TestDiv').attr('v-for', '(Item) in PageData.TestCol');
+    $('#TestDiv').append('<label><input id="Testboxsss3" type="checkbox" /> {{ Item.AA }}</label>');
+
+    let Render = undefined;//'<label class="me-20px checkbox-label">@Input @Display</label>';
+    let InputClass = undefined;
+    let PageData = {
+        //CheckboxCol: {
+        //    '±M®×¦WºÙ': 'ProjectName',
+        //},
+        //TestArray: {
+        //    Display: ['«¢«¢«¢asddasd', '¼Ksada¼Ksadsadsa¼K'],
+        //    Value: ['«¢«¢«¢asddasd', '¼Ksada¼Ksadsadsa¼K'],
+        //},
+        TestCol: [{ AA: 'AaaaaA', GG: 'abc' }],
+        //TestArray2: [
+        //    ['«¢«¢«¢asdsa', '¼K¼K¼Kasdad'],
+        //    ['«¢«¢«¢asdsa', '¼K¼K22¼Kasdad'],
+        //],
+    };
+
+    var Update = new VueModel('', PageData, {}, 'Test')
+        .AddV_CheckboxFrom('VForDiv1', 'PageData.TestCol', 'Testaa')
+        //.AddV_Select
+        //.AddV_CheckboxYesNo('Testboxsss3')
+        .VueInit();
+
+    function Test() {
+        Update.PageData.TestCol.push({
+            AA: 'BB',
+            GG: 'bca'
+        });
+        alert(JSON.stringify(Update.PageData));
+    }
+</script>

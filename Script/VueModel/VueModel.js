@@ -272,10 +272,11 @@ class VueModel {
     AddV_On(ObjectId, EventName, Key = undefined, Result = undefined) {
 
         Key ??= `On${ObjectId}${EventName}`;
-        Key = Key.replace('(', '').replace(')', '');
+        if (!Key.includes('(') && !Key.includes(')'))
+            Key = `${Key}()`;
 
         ObjectId = this.ToJQueryName(ObjectId);
-        $(ObjectId).attr(`v-on:${EventName}`, `${Key}()`);
+        $(ObjectId).attr(`v-on:${EventName}`, Key);
         if (Result != undefined)
             this.VueResult[Key] = Result;
 
@@ -475,51 +476,303 @@ class VueModel {
         return this;
     }
 
+    AddV_CheckboxFrom(ObjectId, DisplayValueKey, ResultKey = undefined, Render = undefined, InputClass = undefined) {
+
+        let ObjectIdReplace = ObjectId.replaceAll('_', '');
+        DisplayValueKey = DisplayValueKey ?? `Result.${ObjectIdReplace}`;
+        if (!DisplayValueKey.includes('.'))
+            DisplayValueKey = `Result.${DisplayValueKey}`;
+
+        InputClass = InputClass ?? '';
+        Render = Render ?? '<label>@Input @Display</label>';
+        ResultKey = ResultKey ?? ObjectIdReplace;
+
+        let GetSource = this.VueResult;
+        let DisplayArray = DisplayValueKey.split('.');
+        for (let Idx in DisplayArray) {
+            let Key = DisplayArray[Idx];
+            GetSource = GetSource[Key];
+        }
+        let CheckboxSource = [];
+        if (typeof GetSource === "object") {
+            if (Array.isArray(GetSource)) {
+                if (Array.isArray(GetSource[0])) {
+                    for (let Idx in GetSource[0]) {
+                        let Display = GetSource[0][Idx];
+                        let Value = GetSource[1][Idx];
+                        CheckboxSource.push({
+                            Display,
+                            Value
+                        });
+                    }
+                }
+                else if (typeof GetSource[0] === "object") {
+                    for (let Idx in GetSource) {
+                        let Item = GetSource[Idx];
+                        let AllKey = Object.keys(Item);
+                        CheckboxSource.push({
+                            Display: AllKey[0],
+                            Value: AllKey[1]
+                        });
+                    }
+                }
+            }
+            else {
+                let AllKey = Object.keys(GetSource);
+                let First = GetSource[AllKey[0]];
+                let Two = GetSource[AllKey[1]];
+                if (typeof First === "string") {
+                    for (let Idx in AllKey) {
+                        let Display = AllKey[Idx];
+                        let Value = GetSource[Display];
+                        CheckboxSource.push({
+                            Display,
+                            Value,
+                        });
+                    }
+                }
+                else if (Array.isArray(First)) {
+                    for (let Idx in First) {
+                        let Display = First[Idx];
+                        let Value = Two[Idx];
+                        CheckboxSource.push({
+                            Display,
+                            Value,
+                        });
+                    }
+                }
+            }
+        }
+        else return this;
+
+        let SetSourceName = `Checkbox_${ObjectIdReplace}_DataSource`;
+        this.PageData[SetSourceName] = CheckboxSource;
+
+        let ChangeEventName = `OnCheckboxChange_${ObjectIdReplace}`;
+        let CheckedEventName = `OnCheckboxChecked_${ObjectIdReplace}`;
+        this.AddEvent_Checkbox(ResultKey, ChangeEventName, CheckedEventName);
+
+        this.AddV_For(ObjectId, `PageData.${SetSourceName}`);
+
+        let InputAttr = [
+            `:id="Item.Value"`,
+            `:checked="${CheckedEventName}(Item.Value)"`,
+            `v-on:change="${ChangeEventName}(Item.Value)"`,
+            `:value="Item.Value"`,
+            `class="${InputClass}"`,
+        ];
+
+        let InputRender = `<input type="checkbox" ${InputAttr.join(' ')}/>`;
+
+        let CheckboxRender = Render
+            .replace('@Input', InputRender)
+            .replace('@Display', '{{ Item.Display }}');
+
+        let JObject = $(this.ToJQueryName(ObjectId));
+        JObject.append(CheckboxRender);
+        return this;
+    }
+
+    AddV_Checkbox(ObjectId, CheckedValue, ResultKey = undefined) {
+        let ObjectIdReplace = ObjectId.replaceAll('_', '');
+        ResultKey = ResultKey ?? ObjectIdReplace;
+
+        CheckedValue = CheckedValue ?? $(this.ToJQueryName(ObjectId)).attr('value');
+        CheckedValue = CheckedValue ?? ObjectIdReplace;
+
+        let ChangeEventName = `OnCheckboxChange_${ObjectIdReplace}`;
+        let CheckedEventName = `OnCheckboxChecked_${ObjectIdReplace}`;
+        this.AddEvent_Checkbox(ResultKey, ChangeEventName, CheckedEventName);
+
+        let VBindChecked = `${CheckedEventName}('${ObjectId}', '${CheckedValue}')`;
+        this.AddV_Bind(ObjectId, 'checked', VBindChecked);
+
+        let VOnChange = `${ChangeEventName}('${ObjectId}', '${CheckedValue}')`;
+        this.AddV_On(ObjectId, 'change', VOnChange);
+
+        return this;
+    }
+
+    AddV_CheckboxYesNo(ObjectId, ResultKey = undefined, TrueValue = true, FalseValue = false) {
+        let ObjectIdReplace = ObjectId.replaceAll('_', '');
+        ResultKey = ResultKey ?? ObjectIdReplace;
+
+        let ChangeEventName = `OnCheckboxChange_${ObjectIdReplace}`;
+        let CheckedEventName = `OnCheckboxChecked_${ObjectIdReplace}`;
+        this.AddEvent_Checkbox_YesNo(ResultKey, ChangeEventName, CheckedEventName);
+
+        let VBindChecked = `${CheckedEventName}('${ObjectId}', '${TrueValue}', '${FalseValue}')`;
+        this.AddV_Bind(ObjectId, 'checked', VBindChecked);
+
+        let VOnChange = `${ChangeEventName}('${ObjectId}', '${TrueValue}', '${FalseValue}')`;
+
+        this.AddV_On(ObjectId, 'change', VOnChange);
+        return this;
+    }
+
+    AddV_RadioButton(ObjectId, DisplayValueKey, ResultKey = undefined, Render = undefined, InputClass = undefined) {
+
+        let ObjectIdReplace = ObjectId.replaceAll('_', '');
+        DisplayValueKey = DisplayValueKey ?? `Result.${ObjectIdReplace}`;
+        if (!DisplayValueKey.includes('.'))
+            DisplayValueKey = `Result.${DisplayValueKey}`;
+
+        InputClass = InputClass ?? '';
+        Render = Render ?? '<label>@Input @Display</label>';
+        ResultKey = ResultKey ?? ObjectIdReplace;
+
+        let GetSource = this.VueResult;
+        let DisplayArray = DisplayValueKey.split('.');
+        for (let Idx in DisplayArray) {
+            let Key = DisplayArray[Idx];
+            GetSource = GetSource[Key];
+        }
+        let CheckboxSource = [];
+        if (typeof GetSource === "object") {
+            if (Array.isArray(GetSource)) {
+                if (Array.isArray(GetSource[0])) {
+                    for (let Idx in GetSource[0]) {
+                        let Display = GetSource[0][Idx];
+                        let Value = GetSource[1][Idx];
+                        CheckboxSource.push({
+                            Display,
+                            Value
+                        });
+                    }
+                }
+                else if (typeof GetSource[0] === "object") {
+                    for (let Idx in GetSource) {
+                        let Item = GetSource[Idx];
+                        let AllKey = Object.keys(Item);
+                        CheckboxSource.push({
+                            Display: AllKey[0],
+                            Value: AllKey[1]
+                        });
+                    }
+                }
+            }
+            else {
+                let AllKey = Object.keys(GetSource);
+                let First = GetSource[AllKey[0]];
+                let Two = GetSource[AllKey[1]];
+                if (typeof First === "string") {
+                    for (let Idx in AllKey) {
+                        let Display = AllKey[Idx];
+                        let Value = GetSource[Display];
+                        CheckboxSource.push({
+                            Display,
+                            Value,
+                        });
+                    }
+                }
+                else if (Array.isArray(First)) {
+                    for (let Idx in First) {
+                        let Display = First[Idx];
+                        let Value = Two[Idx];
+                        CheckboxSource.push({
+                            Display,
+                            Value,
+                        });
+                    }
+                }
+            }
+        }
+        else return this;
+
+        let SetSourceName = `Radio_${ObjectIdReplace}_DataSource`;
+        this.PageData[SetSourceName] = CheckboxSource;
+
+        let ChangeEventName = `OnRadioChange_${ObjectIdReplace}`;
+        let CheckedEventName = `OnRadioChecked_${ObjectIdReplace}`;
+        this.AddEvent_Checkbox(ResultKey, ChangeEventName, CheckedEventName);
+
+        this.AddV_For(ObjectId, `PageData.${SetSourceName}`);
+
+        let InputAttr = [
+            `:id="Item.Value"`,
+            `:checked="${CheckedEventName}(Item.Value)"`,
+            `v-on:change="${ChangeEventName}(Item.Value)"`,
+            `:value="Item.Value"`,
+            `class="${InputClass}"`,
+        ];
+
+        let InputRender = `<input type="radio" ${InputAttr.join(' ')}/>`;
+
+        let CheckboxRender = Render
+            .replace('@Input', InputRender)
+            .replace('@Display', '{{ Item.Display }}');
+
+        let JObject = $(this.ToJQueryName(ObjectId));
+        JObject.append(CheckboxRender);
+        return this;
+    }
+
     // #endregion
 
 
     // #region Add Event For Checkbox
-
     /**
-     * 加入 {FuncName}() 事件至 VueResult 存放區，需於 Html 設定 v-on:change={FuncName}() 事件綁定，當 Checkbox 選擇變換的時候，將變換 Column 加入/移除 VueResult.Result.{Key} 存放區，使用 'AddFunction()'
+     * 加入 {FuncName}() 事件至 VueResult 存放區，需於 Html 設定 v-on:change={FuncName}({Id}) 事件綁定，當 Checkbox 選擇變換的時候，將變換 Column 加入/移除 VueResult.Result.{Key} 存放區，使用 'AddFunction()'
      * @param {any} Key 指定 VueResult.Result 存放區，不得為 undefined
      * @param {any} FuncName 不得為 undefined，需自行綁訂於 Html v-on:change
      */
     AddEvent_OnCheckboxChange(Key, FuncName) {
-        if (FuncName == undefined || FuncName == '' || Key == undefined || Key == '')
-            return this;
+        FuncName = FuncName.replaceAll('(', '').replaceAll(')', '');
 
-        FuncName = FuncName.replace('(', '').replace(')', '');
-
-        this.AddFunction(FuncName, (ChangeColumnKey) => {
+        this.AddFunction(FuncName, (ObjectId, TrueValue) => {
             let ResultColumn = this.Result[Key];
-            let FindIdx = ResultColumn.indexOf(ChangeColumnKey);
 
+            ObjectId = ObjectId ?? TrueValue;
+            TrueValue = TrueValue ?? ObjectId;
+
+            let FindIdx = ResultColumn.indexOf(TrueValue);
+            let JObject = $(this.ToJQueryName(ObjectId));
             //檢核是否為 checked 來決定加入或移除
-            let IsChecked = $(`#${ChangeColumnKey}`).prop('checked');
+            let IsChecked = JObject.prop('checked');
+
             if (IsChecked && FindIdx == -1)
-                ResultColumn.push(ChangeColumnKey);
+                ResultColumn.push(TrueValue);
             else if (FindIdx > -1)
                 ResultColumn.splice(FindIdx, 1);
         });
         return this;
     }
+    AddEvent_OnCheckboxChange_YesNo(Key, FuncName) {
+
+        FuncName = FuncName.replaceAll('(', '').replaceAll(')', '');
+        this.AddFunction(FuncName, (ObjectId, TrueValue, FalseValue) => {
+            let JObject = $(this.ToJQueryName(ObjectId));
+            let IsChecked = JObject.prop('checked');
+            this.Result[Key] = IsChecked ? TrueValue : FalseValue;
+        });
+        return this;
+    }
 
     /**
-     * 加入 {FuncName}() 事件至 VueResult 存放區，需於 Html 設定 v-bind:checked={FuncName}() 事件綁定，當該被加入至 VueResult.Result[Key] 檢核存放區時，通知該選項 DOM checked 屬性設為 true
+     * 加入 {FuncName}() 事件至 VueResult 存放區，需於 Html 設定 v-bind:checked={FuncName}({Id}) 事件綁定，當該被加入至 VueResult.Result[Key] 檢核存放區時，通知該選項 DOM checked 屬性設為 true
      * @param {any} Key 指定 VueResult.Result 存放區，不得為 undefined
      * @param {any} FuncName 不得為 undefined，需自行綁訂於 Html v-bind:checked
      */
     AddEvent_CheckedCheckbox(Key, FuncName) {
-        if (FuncName == undefined || FuncName == '' || Key == undefined || Key == '')
-            return this;
+        this.AddFunction(FuncName, (ObjectId, TrueValue) => {
 
-        this.AddFunction(FuncName, (CheckedColumnKey) => {
+            ObjectId = ObjectId ?? TrueValue;
+            TrueValue = TrueValue ?? ObjectId;
             //初始化 Array
             if (!Array.isArray(this.Result[Key]))
                 this.Result[Key] = [];
 
-            return this.Result[Key].indexOf(CheckedColumnKey) > -1;
+            return this.Result[Key].indexOf(TrueValue) > -1;
+        });
+        return this;
+    }
+    AddEvent_CheckedCheckbox_YesNo(Key, FuncName) {
+        FuncName = FuncName.replaceAll('(', '').replaceAll(')', '');
+
+        this.AddFunction(FuncName, (ObjectId, TrueValue, FalseValue) => {
+            this.Result[Key] = this.Result[Key] ?? false;
+            let RetChecked = this.Result[Key];
+            return RetChecked;
         });
         return this;
     }
@@ -533,6 +786,11 @@ class VueModel {
     AddEvent_Checkbox(Key, ChangeFuncName, CheckedFuncName) {
         this.AddEvent_OnCheckboxChange(Key, ChangeFuncName);
         this.AddEvent_CheckedCheckbox(Key, CheckedFuncName);
+        return this;
+    }
+    AddEvent_Checkbox_YesNo(Key, ChangeFuncName, CheckedFuncName) {
+        this.AddEvent_OnCheckboxChange_YesNo(Key, ChangeFuncName);
+        this.AddEvent_CheckedCheckbox_YesNo(Key, CheckedFuncName);
         return this;
     }
     // #endregion
@@ -926,5 +1184,8 @@ class VueModel {
             }
         } catch (ex) { }
     }
+
     // #endregion
+
+
 }
