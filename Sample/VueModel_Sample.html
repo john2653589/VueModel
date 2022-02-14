@@ -9,13 +9,18 @@
 
 
 <div id="Test">
-    <div>
-        <div id="CheckboxDiv">
+    <div id="CheckboxDiv">
 
-        </div>
-        <button onclick="Test()">AAAA</button>
+    </div>
+
+    <div id="RadioDiv">
+    </div>
+    aaa
+    <div>
+        <label><input id="MyRadio"/> aab</label>
     </div>
 </div>
+<button onclick="Test()">AA</button>
 
 <script>
 
@@ -24,17 +29,38 @@
             'EquipList': 'EquipList',
             'ProjectList': 'ProjectList',
             'ProjectId': 'ProjectId',
-        }
+        },
+        ProjectCheckbox2: {
+            Display: ['EquipList', 'ProjectList', 'ProjectId', 'ProjectId2'],
+            Value: ['EquipList', 'ProjectList', 'ProjectId', 'ProjectId2'],
+        },
+        ProjectCheckbox3: [
+            {
+                Display: 'EquipList1',
+                Valuedsd: '1',
+            },
+            {
+                Display: 'EquipList2',
+                Valuesd: '2',
+            },
+            {
+                Display: 'EquipList3',
+                Valuesd: '3',
+            },
+            {
+                Display: 'EquipList4',
+                Valuesad: '4',
+            },
+        ],
+        ProjectCheckbox4: ['1', '2', '3'],
     };
 
     var Update = new VueModel('', PageData, {}, 'Test')
-        .AddV_CheckboxFrom('CheckboxDiv', 'PageData.ProjectCheckbox', 'MySelectArray')
-        .AddSubmit('Seach', 'api/sdaudsa')
+        .AddV_RadioFrom('RadioDiv', 'PageData.ProjectCheckbox4', 'MySelectArray')
+        .AddV_RadioBind('MyRadio', 'aaa')
         .VueInit();
 
     function Test() {
-        alert(JSON.stringify(Update.Result.MySelectArray));
-        Update.Submit('Seach');
-
+        alert(JSON.stringify(Update.Result));
     }
 </script>
