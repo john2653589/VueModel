@@ -238,6 +238,8 @@ class VueModel {
      */
     AddV_Text(ObjectId, Key = undefined) {
         Key ??= `Result.${ObjectId.replace('_', '')}`;
+
+        alert(Key);
         ObjectId = this.ToJQueryName(ObjectId);
         $(ObjectId).attr('v-text', Key);
         return this;
@@ -453,6 +455,9 @@ class VueModel {
      */
     AddV_Input(InputId, InputV_Model = undefined) {
         InputV_Model ??= `Result.${InputId}`;
+        if (!InputV_Model.includes('.'))
+            InputV_Model = `Result.${InputV_Model}`;
+
         this.AddV_Model(InputId, InputV_Model);
         return this;
     }
@@ -616,7 +621,10 @@ class VueModel {
         return this;
     }
 
-    AddV_Radio(ObjectId, Url, ResultKey = undefined, Render = undefined, RadioClass = undefined) {
+    AddV_Radio(ObjectId, Url = undefined, ResultKey = undefined, Render = undefined, RadioClass = undefined) {
+
+        Url = Url ?? this.UrlKeyDic[this.ElementName];
+
         this.AddVue(ObjectId, Url);
         let ObjectIdReplace = this.ToReplaceObjectId(ObjectId);
         let DisplayValueKey = `Result.${ObjectIdReplace}`;

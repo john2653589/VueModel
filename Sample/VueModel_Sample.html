@@ -7,15 +7,39 @@
 <script src="../Script/VueModel/VueModel.js"></script>
 
 
-<div id="body" style="padding:100px">
+<div id="PageContent" style="padding:100px">
 
+    <!--Checkbox Radio Sample-->
+
+    <div>
+        <div id="RadioDiv">
+
+        </div>
+    </div>
     <div>
         <div id="CheckboxDiv">
 
         </div>
     </div>
 
-    <button id="ShowBtn">AAA</button>
+    <!-- Label Sample -->
+
+    <label id="MyName"></label>
+
+    <!-- Input Text Sample -->
+
+    <input id="MyFirstName" />
+
+    <!-- Select Sample -->
+
+    <select id="CountySelect">
+    </select>
+
+    <div id="Testrtt">
+
+    </div>
+
+    <button id="ShowBtn">Show</button>
 
     <!--<div>
         <label>±b¸¹</label>
@@ -66,9 +90,50 @@
 
 <script>
 
-    let Url = 'https://localhost:44363/api/VueModel/TestCheckbox';
-    var Update = new VueModel('', {}, {}, 'body')
-        .AddV_Radio('CheckboxDiv', Url)
-        .Ajax(undefined, 'CheckboxDiv');
+    // Label Sample From PageData
+
+    //var PageData = {
+    //    MyName: 'Rugal'
+    //};
+
+    //var Model = new VueModel('', PageData, {}, 'PageContent')
+    //    .AddV_Text('MyName', 'PageData.MyName')
+    //    .VueInit();
+
+    // Input Text Sample
+
+    //var Model = new VueModel('', {}, {}, 'PageContent')
+    //    .AddV_Input('MyFirstName')
+    //    .AddV_Button('ShowBtn', () => alert(JSON.stringify(Model.Result)))
+    //    .VueInit();
+
+
+    // Select Sample
+
+    //let Result = {
+    //    CountyId = 1,  // Default Value
+    //};
+    //let SelectUrl = 'http://59.125.25.233:81/api/VueModel/Select';
+    //var Model = new VueModel('', {}, {}, 'PageContent')
+    //    .AddV_Select('CountySelect', SelectUrl, 'CountyId', 'CountyName')
+    //    .AddV_Button('ShowBtn', ShowBtnClick)
+    //    .Ajax({}, 'CountySelect');
+
+    //Model.Result.CountyId = 1; // Defailt Value
+
+    // Radio Checkbox Sample
+
+    //let CheckboxUrl = 'http://59.125.25.233:81/api/VueModel/Checkbox';
+    //let RadioUrl = 'http://59.125.25.233:81/api/VueModel/Radio';
+    //var Model = new VueModel('', {}, {}, 'PageContent')
+    //    .AddV_Radio('RadioDiv', RadioUrl, 'County')
+    //    .AddV_Checkbox('CheckboxDiv', CheckboxUrl, 'Postion')
+    //    .AddV_Button('ShowBtn', () => alert(JSON.stringify(Model.Result)))
+    //    .Ajax({}, 'RadioDiv')
+    //    .Ajax({}, 'CheckboxDiv');
+
+    function ShowBtnClick() {
+        alert(JSON.stringify(Model.Result));
+    }
 
 </script>
