@@ -10,6 +10,14 @@
 <div id="body" style="padding:100px">
 
     <div>
+        <div id="CheckboxDiv">
+
+        </div>
+    </div>
+
+    <button id="ShowBtn">AAA</button>
+
+    <!--<div>
         <label>±b¸¹</label>
         <input id="EquipNo" />
     </div>
@@ -51,39 +59,16 @@
         </label>
     </div>
 
-    <button id="LoginBtn">µn¤J</button>
-
+    <button id="LoginBtn">µn¤J</button>-->
     <!--<button onclick="Test()">AA</button>-->
 </div>
 
 
 <script>
 
-    let Url = 'http://59.125.25.233/api/Equip/Test';
-    let PageData = {
-        MyName: 'Rugal',
-        TagNo: 123
-    };
-
-    var Update = new VueModel(Url, PageData, {}, 'body')
-        //.AddV_Input('EquipNo')
-        .AddV_InputMult({  //  =  .AddV_Input('EquipNo')
-            EquipNo,
-        })
-        /*.AddV_Input('TagNo' , 'PageData')*/
-        .AddV_InputMult({
-            TagNo
-        }, 'PageData')   //  =  .AddV_Input('TagNo' , 'PageData')
-        .AddV_Button('LoginBtn', () => alert(JSON.stringify(Update.Result))) // Button
-        .AddV_SelectBind('MySelect') // Select
-        .AddV_RadioBind('ARad', true, 'MyGroup')
-        .AddV_RadioBind('BRad', 12312, 'MyGroup') // Input > Radio
-        .AddV_CheckboxBind('Cb1', undefined, 'MyCb')
-        .AddV_CheckboxBind('Cb2', undefined, 'MyCb') //Input > Checkbox
-        .AddV_Text('EquipId') //Label
-        .Ajax();
-
-
-
+    let Url = 'https://localhost:44363/api/VueModel/TestCheckbox';
+    var Update = new VueModel('', {}, {}, 'body')
+        .AddV_Radio('CheckboxDiv', Url)
+        .Ajax(undefined, 'CheckboxDiv');
 
 </script>

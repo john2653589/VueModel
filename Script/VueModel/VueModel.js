@@ -104,10 +104,11 @@ class VueModel {
     // #region Add Url And Reset VueResult
     /**
      * 加入一個 Url : Key，寫入 UrlKeyDic[Key] 字典，並初始化 VueResult[Key] 存放區
-     * @param {any} Url 不得為 undefined
      * @param {any} Key 不得為 undefined
+     * @param {any} Url 不得為 undefined
+     * @param {any} IsDomSource 可為 undefined
      */
-    AddVue(Key, Url) {
+    AddVue(Key, Url, IsDomSource = false) {
         this.UrlKeyDic[Key] = Url;
         this.VueResult[Key] = {};
         return this;
@@ -342,12 +343,12 @@ class VueModel {
     // #region Create Or Set Vue Property For DOM Object
 
     /**
-     * 加入一個 {Url} 至 VueResult[SelectId] 存放區，使用 'AddV_SelectBind()'
-     * @param {any} SelectId 不得為 undefined
-     * @param {any} Url 不得為 undefined
-     * @param {any} V_Value 選項值，若為 undefined 則使用 'Item' 作為 v-value= {V_Value} 值，若不為 'Item' 且不包含 ('.') 則自動套用 '{V_ForIn}.{V_Value}'
-     * @param {any} V_Text 選項字樣，若為 undefined 則使用 'Item' 作為 v-text= {V_Text} 值，若不為 'Item' 且不包含 ('.') 則自動套用 '{V_ForIn}.{V_Text}'
-     * @param {any} V_Model 選擇結果，若為 undefined 則使用 Result.{SelectId} 作為 v-model= {V_Model} 值
+     * <select> : 從 api 建構
+     * @param {any} SelectId Dom Id
+     * @param {any} Url Api Url
+     * @param {any} V_Value 可為 undefined，option value 值
+     * @param {any} V_Text 可為 undefined，option 顯示字樣
+     * @param {any} V_Model 可為 undefined，綁定選擇欄位
      */
     AddV_Select(SelectId, Url = '', V_Value = undefined, V_Text = undefined, V_Model = undefined) {
         if (Url != undefined && Url != '')
@@ -357,12 +358,12 @@ class VueModel {
     }
 
     /**
-     * 加入 Vue 屬性至指定 DOM {SelectId} Attr，並設定 'v-model'、'v-for'、'v-text'、'v-value'
-     * @param {any} SelectId 不得為 undefined
-     * @param {any} V_Value 選項值，若為 undefined 則使用 'Item' 作為 v-value= {V_Value} 值，若不為 'Item' 且不包含 ('.') 則自動套用 '{V_ForIn}.{V_Value}'
-     * @param {any} V_Text 選項字樣，若為 undefined 則使用 'Item' 作為 v-text= {V_Text} 值，若不為 'Item' 且不包含 ('.') 則自動套用 '{V_ForIn}.{V_Text}'
-     * @param {any} V_Model 選擇結果，若為 undefined 則使用 Result.{SelectId} 作為 v-model= {V_Model} 值
-     * @param {any} V_ForKey Option綁定來源，若為 undefined 則使用 {SelectId} 作為 v-for= in {V_ForKey} 值
+     * <select>：從靜態 html 或 指定來源綁定
+     * @param {any} SelectId Dom Id
+     * @param {any} V_Value 可為 undefined，option value 值
+     * @param {any} V_Text 可為 undefined，option 顯示字樣
+     * @param {any} V_Model 可為 undefined，綁定選擇欄位
+     * @param {any} V_ForKey 指定來源
      */
     AddV_SelectBind(SelectId, V_Value = undefined, V_Text = undefined, V_Model = undefined, V_ForKey = undefined) {
 
@@ -398,10 +399,10 @@ class VueModel {
     }
 
     /**
-     * 加入 Vue 屬性至指定 DOM {SelectId} Attr，並設定自訂 Attr {CustomOption}
-     * @param {any} SelectId 不得為 undefined
-     * @param {any} V_Model 若為 undefined 則使用 Result.{SelectId} 作為 v-model={V_Model} 值
-     * @param {any} CustomOption 不得為 undefined
+     * <select>：自定義 Vue 屬性
+     * @param {any} SelectId Dom Id
+     * @param {any} V_Model 可為 undefined，綁定選擇欄位
+     * @param {any} CustomOption 自定義 Vue 屬性
      */
     AddV_SelectCustom(SelectId, V_Model = undefined, CustomOption = {}) {
 
@@ -419,20 +420,20 @@ class VueModel {
     }
 
     /**
-     * 加入 Vue 屬性至指定 DOM {ButtonId} Attr，使用 'AddFunction()'
-     * @param {any} ButtonId 不得為 undefined
-     * @param {any} ClickResult 不得為 undefined
-     * @param {any} FuncKey 若為 undefined 則使用 {ButtonId}_Click 作為 v-on:click={Key} 值
+     * <button>：從靜態 html 綁定
+     * @param {any} ButtonId Dom Id
+     * @param {any} ClickFunction 點擊執行事件
+     * @param {any} FuncKey 可為 undefined，事件名稱
      */
-    AddV_Button(ButtonId, ClickResult, FuncKey = undefined) {
+    AddV_Button(ButtonId, ClickFunction, FuncKey = undefined) {
         FuncKey ??= `Func${ButtonId}_Click`;
-        this.AddFunction(FuncKey, ClickResult, ButtonId, 'click');
+        this.AddFunction(FuncKey, ClickFunction, ButtonId, 'click');
         return this;
     }
 
     /**
-     * 加入多個 Vue 屬性至指定 DOM {ButtonId} Attr，使用 'AddV_Button()'
-     * @param {any} ButtonIdResult 不得為 undefined
+     * <button>：從靜態 html 綁定多個
+     * @param {any} ButtonIdResult Json 格式：{ DomId : 點擊執行事件 }
      */
     AddV_Button_Mult(ButtonIdResult = {}) {
         let AllKeys = Object.keys(ButtonIdResult);
@@ -446,9 +447,9 @@ class VueModel {
     }
 
     /**
-     * 加入 Vue 屬性至指定 DOM {InputId} Attr
-     * @param {any} InputId 不得為 undefined
-     * @param {any} InputV_Model 若為 undefined 則使用 Result.{InputId} 作為 InputV_Model 值
+     * <input>：從靜態 html 綁定
+     * @param {any} InputId Dom Id
+     * @param {any} InputV_Model 可為 undefined，綁定輸入欄位
      */
     AddV_Input(InputId, InputV_Model = undefined) {
         InputV_Model ??= `Result.${InputId}`;
@@ -457,9 +458,9 @@ class VueModel {
     }
 
     /**
-     * 加入多個 Vue 屬性 {} 至多個 DOM {InputId} Attr，使用 'AddV_Input()'，並指定資料來源 {KeyFor}
-     * @param {any} InputIdVModel 不得為 undefined
-     * @param {any} KeyFor 若為 undefined 則使用 Result 作為 KeyFor 值
+     * <input>：從靜態 html 綁定多個
+     * @param {any} InputIdVModel Json 格式 : { DomId : 綁定輸入欄位 }
+     * @param {any} KeyFor 綁定結果欄位來源
      */
     AddV_InputMult(InputIdVModel = {}, KeyFor = undefined) {
         let AllKeys = Object.keys(InputIdVModel);
@@ -480,17 +481,48 @@ class VueModel {
         return this;
     }
 
-    AddV_CheckboxFrom(ObjectId, DisplayValueKey, ResultKey = undefined, Render = undefined, CheckboxClass = undefined) {
+    /**
+     * <input type="checkbox">：從 Api 建構
+     * @param {any} ObjectId Dom Id
+     * @param {any} Url Api Url
+     * @param {any} ResultKey 可為 undefined，指定結果欄位
+     * @param {any} Render 可為 undefined，自訂渲染 html，預設為 <label>@Checkbox　@Display</label>
+     * @param {any} CheckboxClass checkbox class 參數
+     */
+    AddV_Checkbox(ObjectId, Url, ResultKey = undefined, Render = undefined, CheckboxClass = undefined) {
 
+        this.AddVue(ObjectId, Url);
         let ObjectIdReplace = this.ToReplaceObjectId(ObjectId);
+        let DisplayValueKey = `Result.${ObjectIdReplace}`;
+
+        this.AddV_CheckboxFrom(ObjectId, DisplayValueKey, ResultKey, Render, CheckboxClass);
+        return this;
+    }
+
+    /**
+     * <input type="checkbox">：從 指定資料來源 建構
+     * @param {any} ObjectId Dom Id
+     * @param {any} DisplayValueKey 可為 undefined，指定資料來源
+     * @param {any} ResultKey 可為 undefined，指定結果欄位
+     * @param {any} Render 可為 undefined，自訂渲染 html，預設為 <label>@Checkbox　@Display</label>
+     * @param {any} CheckboxClass checkbox class 參數
+     */
+    AddV_CheckboxFrom(ObjectId, DisplayValueKey = undefined, ResultKey = undefined, Render = undefined, CheckboxClass = undefined) {
+
+        //去除 _
+        let ObjectIdReplace = this.ToReplaceObjectId(ObjectId);
+        //預設資料來源
         DisplayValueKey = DisplayValueKey ?? `Result.${ObjectIdReplace}`;
-        if (!DisplayValueKey.includes('.'))
+        if (!DisplayValueKey.includes('.')) //預設從 Result.{}
             DisplayValueKey = `Result.${DisplayValueKey}`;
 
         CheckboxClass = CheckboxClass ?? '';
         Render = Render ?? '<label>@Checkbox @Display</label>';
+
+        //預設選擇指定 Result.{Key}
         ResultKey = ResultKey ?? ObjectIdReplace;
 
+        //建立 Dom Source
         if (!this.CreateDomSourceFrom(ObjectId, DisplayValueKey))
             return this;
 
@@ -581,6 +613,15 @@ class VueModel {
         let VOnChange = `${ChangeEventName}('${ObjectId}', '${TrueValue}', '${FalseValue}')`;
 
         this.AddV_On(ObjectId, 'change', VOnChange);
+        return this;
+    }
+
+    AddV_Radio(ObjectId, Url, ResultKey = undefined, Render = undefined, RadioClass = undefined) {
+        this.AddVue(ObjectId, Url);
+        let ObjectIdReplace = this.ToReplaceObjectId(ObjectId);
+        let DisplayValueKey = `Result.${ObjectIdReplace}`;
+
+        this.AddV_RadioFrom(ObjectId, DisplayValueKey, ResultKey, Render, RadioClass);
         return this;
     }
 
@@ -730,6 +771,8 @@ class VueModel {
         return this;
     }
 
+
+
     AddEvent_Checkbox_Change_YesNo(Key, FuncName) {
         FuncName = FuncName.replaceAll('(', '').replaceAll(')', '');
         this.AddFunction(FuncName, (ObjectId, TrueValue, FalseValue) => {
@@ -861,6 +904,8 @@ class VueModel {
      * @param {any} OnComplate 若不為 undefined 則在 Ajax complate 後額外執行
      */
     Ajax(SendData = {}, Key = undefined, MethodType = undefined, OnSuccess = undefined, OnError = undefined, OnComplate = undefined) {
+        this.VueInit();
+
         this.MethodType = MethodType ?? this.MethodType;
 
         Key ??= this.ElementName;
@@ -876,6 +921,7 @@ class VueModel {
 
         if (typeof SendData === 'object' && Object.keys(SendData).length > 0)
             SendData = JSON.stringify(SendData);
+
         this.AjaxOptions = {
             type: SendType,
             url: SendUrl,
@@ -1017,9 +1063,14 @@ class VueModel {
      * @param {any} Result 可接受 string、object、json
      */
     AjaxSuccess(Key, Result) {
-        this.UpdateVueModel(Result, Key);
+        var IsDomSource = this.IsDomSource(Key);
+        if (IsDomSource) {
+            this.UpdateDomSource(Key, Result);
+        }
+        else {
+            this.UpdateVueModel(Result, Key);
+        }
         this.OnSuccess(Result);
-        this.VueInit();
     }
 
     /**
@@ -1029,7 +1080,6 @@ class VueModel {
      */
     AjaxError(Error) {
         this.OnError(Error);
-        this.VueInit();
     }
 
     /**
@@ -1061,6 +1111,7 @@ class VueModel {
             this.VueResult[SetResult] = Result;
         return this;
     }
+
     /**
      * 將多個 KeyResult { Key : Result } 更新至 VueResult[Key] 存放區，推薦使用同名屬性執行，使用 'UpdateVueModel()'
      * @param {any} KeyResult 接受 { Result }，同 'Result' : Result
@@ -1166,10 +1217,9 @@ class VueModel {
                 SendUrl = `${SendUrl}?${UrlParam}`;
             }
             else if (typeof SendData === 'string') {
-                SendUrl = `${SendUrl}/${SendData}`;
+                SendUrl = `${SendUrl}?${SendData}`;
             }
         }
-
         return SendUrl;
     }
 
@@ -1289,6 +1339,9 @@ class VueModel {
 
     ConvertDomSource(Source) {
         let ReturnSource = [];
+        if (Source == undefined)
+            Source = {};
+
         if (typeof Source === "object") {
             if (Array.isArray(Source)) {
                 if (Array.isArray(Source[0])) {
