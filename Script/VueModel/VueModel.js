@@ -929,7 +929,7 @@ class VueModel {
 
         if (typeof SendData === 'object' && Object.keys(SendData).length > 0)
             SendData = JSON.stringify(SendData);
-
+         
         this.AjaxOptions = {
             type: SendType,
             url: SendUrl,
@@ -1210,25 +1210,26 @@ class VueModel {
      * @param {any} MethodType 不得為 undefined
      */
     GetUrl(Key, SendData, MethodType) {
-        let UpperType = MethodType.toUpperCase();
+        //let UpperType = MethodType.toUpperCase();
         let SendUrl = this.UrlKeyDic[Key];
-        if (UpperType == 'GET') {
-            if (typeof SendData === 'object') {
-                let Params = [];
-                let AllKeys = Object.keys(SendData);
-                for (let KeyIdx in AllKeys) {
-                    let Key = AllKeys[KeyIdx];
-                    let Val = SendData[Key];
-                    Params.push(`${Key}=${Val}`);
-                }
-                let UrlParam = Params.join('&');
-                SendUrl = `${SendUrl}?${UrlParam}`;
-            }
-            else if (typeof SendData === 'string') {
-                SendUrl = `${SendUrl}?${SendData}`;
-            }
-        }
         return SendUrl;
+        //if (UpperType == 'GET') {
+        //    if (typeof SendData === 'object') {
+        //        let Params = [];
+        //        let AllKeys = Object.keys(SendData);
+        //        for (let KeyIdx in AllKeys) {
+        //            let Key = AllKeys[KeyIdx];
+        //            let Val = SendData[Key];
+        //            Params.push(`${Key}=${Val}`);
+        //        }
+        //        let UrlParam = Params.join('&');
+        //        SendUrl = `${SendUrl}?${UrlParam}`;
+        //    }
+        //    else if (typeof SendData === 'string') {
+        //        SendUrl = `${SendUrl}?${SendData}`;
+        //    }
+        //}
+        //return SendUrl;
     }
 
     /**

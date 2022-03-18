@@ -1,0 +1,108 @@
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/css/bootstrap.min.css" integrity="sha384-zCbKRCUGaJDkqS1kPbPd7TveP5iyJE0EjAuZQTgFLD2ylzuqKfdKlfG/eSrtxUkn" crossorigin="anonymous">
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-fQybjgWLrvvRgtW6bFlB7jaZrFsaBXjsOMm/tB9LTS58ONXgqbR9W8oWht/amnpF" crossorigin="anonymous"></script>
+
+<script src="../Script/jquery/dist/jquery.min.js"></script>
+<script src="../Script/Vue/vue.js"></script>
+<script src="../Script/VueModel/VueModel.js"></script>
+
+
+<div id="PageContent" style="padding:100px">
+
+    <!--Checkbox Radio Sample-->
+
+    <div>
+        <div id="RadioDiv">
+
+        </div>
+    </div>
+    <div>
+        <div id="CheckboxDiv">
+
+        </div>
+    </div>
+
+    <!-- Label Sample -->
+
+    <label id="MyName"></label>
+
+    <!-- Input Text Sample -->
+
+    <input id="MyFirstName" />
+
+    <!-- Select Sample -->
+
+    <select id="CountySelect">
+        <option value="">=== 請選擇 ===</option>
+    </select>
+
+    <div id="Testrtt">
+
+    </div>
+
+    <button id="ShowBtn">Show</button>
+
+    <!--<div>
+        <label>帳號</label>
+        <input id="EquipNo" />
+    </div>
+    <div>
+        <label>密碼</label>
+        <input id="TagNo" />
+    </div>
+
+    <select id="MySelect">
+        <option value="123">ABC</option>
+        <option value="456">DEF</option>
+    </select>
+    <br />
+
+    <div>
+        <label>ABC</label>
+        <input id="ARad" type="radio" name="AGroup" />
+    </div>
+
+    <div>
+        <label>BCD</label>
+        <input id="BRad" type="radio" name="AGroup" />
+    </div>
+
+    <div>
+        <label>ABC</label>
+        <input id="Cb1" type="checkbox" value="123" />
+    </div>
+
+    <div>
+        <label>BCD</label>
+        <input id="Cb2" type="checkbox" value="456" />
+    </div>
+
+    <div>
+        <label>
+            <span>MyName:</span>
+            <span id="EquipId"></span>
+        </label>
+    </div>
+
+    <button id="LoginBtn">登入</button>-->
+    <!--<button onclick="Test()">AA</button>-->
+</div>
+
+
+<script>
+
+    let Result = {
+        CountyId : '',
+    };
+    let Url = 'http://59.125.25.233:81/api/VueModel/Select';
+    var Model = new VueModel('', {}, {}, 'PageContent')
+        .AddV_Select('CountySelect', Url, 'CountyId', 'CountyName')
+        .UpdateVueModel(Result)
+        .Ajax({}, 'CountySelect');
+
+
+    function ShowBtnClick() {
+        alert(JSON.stringify(Model.Result));
+    }
+
+</script>
