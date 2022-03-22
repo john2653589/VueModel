@@ -7,133 +7,148 @@
 <script src="../Script/VueModel/VueModel.js"></script>
 
 
-<div id="PageContent" style="padding:100px">
+<div id="PageContent" style="padding:50px">
 
-    <!--Checkbox Radio Sample-->
+    <div class="row">
+        <div class="col-5 mt-3">
+            <!-- Input Text Sample -->
+            <div>
+                <label>Input : </label>
+                <input id="InputTest" />
+            </div>
 
-    <div>
-        <div id="RadioDiv">
+            <hr />
 
+            <!-- Label Sample -->
+            <div>
+                <label>Label : </label>
+                <label id="LabelTest"></label>
+            </div>
+
+            <hr />
+
+            <!-- Select Sample -->
+            <div>
+                <label>Select From Api : </label>
+                <select id="CountySelect">
+                    <option value="">=== Select ===</option>
+                </select>
+            </div>
+
+            <div>
+                <label>Select From Static Html : </label>
+                <select id="BindSelect">
+                    <option value="">=== Select ===</option>
+                    <option value="1">Bind Value 1</option>
+                    <option value="2">Bind Value 2</option>
+                    <option value="3">Bind Value 3</option>
+                    <option value="4">Bind Value 4</option>
+                </select>
+            </div>
+
+            <hr />
+
+            <!-- Checkbox Sample -->
+            <div>
+                <label>Checkbox From Api : </label>
+                <div id="CheckboxApi">
+                </div>
+            </div>
+
+            <div>
+                <label>Checkbox From Bind : </label>
+                <div id="CheckboxBind">
+                    <label><input id="CbBind1" type="checkbox" value="CheckboxBind1" /> CkBindColumn1</label>
+                    <label><input id="CbBind2" type="checkbox" value="CheckboxBind2" /> CkBindColumn2</label>
+                </div>
+            </div>
+
+            <hr />
+
+            <!-- Radio Sample -->
+            <div>
+                <label>Radio From Api : </label>
+                <div id="RadioApi">
+                </div>
+            </div>
+
+            <div>
+                <label>Radio From Static Html : </label>
+                <div id="RadioBind">
+                    <label><input id="RdBind1" name="RadioBind" type="radio" value="RadioBind1" /> RdBindColumn1</label>
+                    <label><input id="RdBind2" name="RadioBind" type="radio" value="RadioBind2" /> RdBindColumn2</label>
+                </div>
+            </div>
+        </div>
+
+        <!-- Result -->
+        <div class="row justify-items-end">
+            <div class="col-7 h-75 d-inline-block" style="position:fixed;">
+
+                <label>Vue Model Storage</label>
+                <br />
+                <select id="Storage">
+                    <option value="Result">Result</option>
+                    <option value="VueResult">Vue Result</option>
+                    <option value="PageData">PageData</option>
+                    <option value="DomSource">Dom Source</option>
+                    <option value="TempResult">Temp Result</option>
+                </select>
+                <br />
+                <textarea class="mt-3" id="ResultShow" readonly style="width:100%; height:100%;"></textarea>
+            </div>
         </div>
     </div>
-    <div>
-        <div id="CheckboxDiv">
-
-        </div>
-    </div>
-
-    <!-- Label Sample -->
-
-    <label id="MyName"></label>
-
-    <!-- Input Text Sample -->
-
-    <input id="MyFirstName" />
-
-    <!-- Select Sample -->
-
-    <select id="CountySelect">
-    </select>
-
-    <div id="Testrtt">
-
-    </div>
-
-    <button id="ShowBtn">Show</button>
-
-    <!--<div>
-        <label>±b¸¹</label>
-        <input id="EquipNo" />
-    </div>
-    <div>
-        <label>±K½X</label>
-        <input id="TagNo" />
-    </div>
-
-    <select id="MySelect">
-        <option value="123">ABC</option>
-        <option value="456">DEF</option>
-    </select>
-    <br />
-
-    <div>
-        <label>ABC</label>
-        <input id="ARad" type="radio" name="AGroup" />
-    </div>
-
-    <div>
-        <label>BCD</label>
-        <input id="BRad" type="radio" name="AGroup" />
-    </div>
-
-    <div>
-        <label>ABC</label>
-        <input id="Cb1" type="checkbox" value="123" />
-    </div>
-
-    <div>
-        <label>BCD</label>
-        <input id="Cb2" type="checkbox" value="456" />
-    </div>
-
-    <div>
-        <label>
-            <span>MyName:</span>
-            <span id="EquipId"></span>
-        </label>
-    </div>
-
-    <button id="LoginBtn">µn¤J</button>-->
-    <!--<button onclick="Test()">AA</button>-->
 </div>
-
 
 <script>
 
-    // Label Sample From PageData
+    // Set Default Value
+    let Result = {
+        CountyId: '',
+        BindSelect: '',
+    };
+    let SelectUrl = 'http://59.125.25.233:81/api/VueModel/Select';
+    let CheckboxUrl = 'http://59.125.25.233:81/api/VueModel/Checkbox';
+    let RadioUrl = 'http://59.125.25.233:81/api/VueModel/Radio';
 
-    //var PageData = {
-    //    MyName: 'Rugal'
-    //};
+    var Model = new VueModel('', {}, {}, 'PageContent')
+        // Input
+        .AddV_Input('InputTest')
+        // Label or Some Display Text
+        .AddV_Text('LabelTest', 'Result.InputTest')
+        // Select From Call Api
+        .AddV_Select('CountySelect', SelectUrl, 'CountyId', 'CountyName')
+        // Select From Html
+        .AddV_SelectBind('BindSelect')
+        // Checkbox From Call Api
+        .AddV_Checkbox('CheckboxApi', CheckboxUrl)
+        // Checkbox Other Option
+        .AddV_Checkbox_Other('CheckboxApi')
+        // Checkbox From Html
+        .AddV_CheckboxBindMult('CheckboxBind', {
+            CbBind1: 'CbCusBindValue',
+            CbBind2,
+        })
+        // Radio From Call Api
+        .AddV_Radio('RadioApi', RadioUrl)
+        // Radio Other Option
+        .AddV_Radio_Other('RadioApi')
+        // Radio From Html
+        .AddV_RadioBindMult('RadioBind', {
+            RdBind1: 'RdCusBindValue',
+            RdBind2
+        })
+        // Set Default Value
+        .UpdateVueModel(Result)
+        .Ajax({}, 'CountySelect')
+        .Ajax({}, 'CheckboxApi')
+        .Ajax({}, 'RadioApi')
+        ;
 
-    //var Model = new VueModel('', PageData, {}, 'PageContent')
-    //    .AddV_Text('MyName', 'PageData.MyName')
-    //    .VueInit();
-
-    // Input Text Sample
-
-    //var Model = new VueModel('', {}, {}, 'PageContent')
-    //    .AddV_Input('MyFirstName')
-    //    .AddV_Button('ShowBtn', () => alert(JSON.stringify(Model.Result)))
-    //    .VueInit();
-
-
-    // Select Sample
-
-    //let Result = {
-    //    CountyId = 1,  // Default Value
-    //};
-    //let SelectUrl = 'http://59.125.25.233:81/api/VueModel/Select';
-    //var Model = new VueModel('', {}, {}, 'PageContent')
-    //    .AddV_Select('CountySelect', SelectUrl, 'CountyId', 'CountyName')
-    //    .AddV_Button('ShowBtn', ShowBtnClick)
-    //    .Ajax({}, 'CountySelect');
-
-    //Model.Result.CountyId = 1; // Defailt Value
-
-    // Radio Checkbox Sample
-
-    //let CheckboxUrl = 'http://59.125.25.233:81/api/VueModel/Checkbox';
-    //let RadioUrl = 'http://59.125.25.233:81/api/VueModel/Radio';
-    //var Model = new VueModel('', {}, {}, 'PageContent')
-    //    .AddV_Radio('RadioDiv', RadioUrl, 'County')
-    //    .AddV_Checkbox('CheckboxDiv', CheckboxUrl, 'Postion')
-    //    .AddV_Button('ShowBtn', () => alert(JSON.stringify(Model.Result)))
-    //    .Ajax({}, 'RadioDiv')
-    //    .Ajax({}, 'CheckboxDiv');
-
-    function ShowBtnClick() {
-        alert(JSON.stringify(Model.Result));
+    var Timer = setInterval(UpdateResultShow, 100);
+    function UpdateResultShow() {
+        let StorageKey = $("#Storage").val();
+        $("#ResultShow").val(JSON.stringify(Model[StorageKey], null, 2));
     }
-
 </script>

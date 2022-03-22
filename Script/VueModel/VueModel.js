@@ -6,7 +6,6 @@
 
 class VueModel {
     constructor(_Url, _PageData = {}, _VueOptions = {}, _ElementName = '#content', IsMountedShow = true) {
-
         this._Vue;
         this._VueOptions = {};
 
@@ -23,6 +22,7 @@ class VueModel {
             PageData: _PageData,
             Result: {},
             DomSource: {},
+            DomSourceKey: {},
             TempResult: {},
         };
         this.OnSuccess = function (Result) { };
@@ -49,6 +49,7 @@ class VueModel {
     get Result() { return this.VueResult.Result; }
     set Result(SetResult) { this.VueResult.Result = SetResult; }
     get DomSource() { return this.VueResult.DomSource; }
+    get DomSourceKey() { return this.VueResult.DomSourceKey; }
     get TempResult() { return this.VueResult.TempResult; }
     // #endregion
 
@@ -106,9 +107,8 @@ class VueModel {
      * 加入一個 Url : Key，寫入 UrlKeyDic[Key] 字典，並初始化 VueResult[Key] 存放區
      * @param {any} Key 不得為 undefined
      * @param {any} Url 不得為 undefined
-     * @param {any} IsDomSource 可為 undefined
      */
-    AddVue(Key, Url, IsDomSource = false) {
+    AddVue(Key, Url) {
         this.UrlKeyDic[Key] = Url;
         this.VueResult[Key] = {};
         return this;
@@ -204,7 +204,7 @@ class VueModel {
      * @param {any} Key 若為 undefined 則使用 Result 作為 Key 值
      */
     AddV_Model(ObjectId, Key = undefined) {
-        Key ??= 'Result';
+        Key ??= `Result.${ObjectId}`;
         ObjectId = this.ToJQueryName(ObjectId);
         $(ObjectId).attr('v-model', Key.replaceAll('_', ''));
         return this;
@@ -239,7 +239,6 @@ class VueModel {
     AddV_Text(ObjectId, Key = undefined) {
         Key ??= `Result.${ObjectId.replace('_', '')}`;
 
-        alert(Key);
         ObjectId = this.ToJQueryName(ObjectId);
         $(ObjectId).attr('v-text', Key);
         return this;
@@ -273,7 +272,7 @@ class VueModel {
      * 將 'v-on:{EventName}' Vue屬性加入至 ObjectId DOM
      * @param {any} ObjectId 不得為 undefined
      * @param {any} EventName 不得為 undefined
-     * @param {any} Key 若為 undefined 則使用 On{ObjectId}{EventName} 作為 Key 值，不需包含 '()'
+     * @param {any} Key 可為 undefined
      * @param {any} Result 若不為 undefined 則放入 VueResult[Key] 存放區
      */
     AddV_On(ObjectId, EventName, Key = undefined, Result = undefined) {
@@ -348,51 +347,58 @@ class VueModel {
      * <select> : 從 api 建構
      * @param {any} SelectId Dom Id
      * @param {any} Url Api Url
-     * @param {any} V_Value 可為 undefined，option value 值
-     * @param {any} V_Text 可為 undefined，option 顯示字樣
-     * @param {any} V_Model 可為 undefined，綁定選擇欄位
+     * @param {any} ValueKey 可為 undefined，option value 值
+     * @param {any} DisplayKey 可為 undefined，option 顯示字樣
+     * @param {any} ResultKey 可為 undefined，綁定選擇欄位
      */
-    AddV_Select(SelectId, Url = '', V_Value = undefined, V_Text = undefined, V_Model = undefined) {
+    AddV_Select(SelectId, Url = '', ValueKey = undefined, DisplayKey = undefined, ResultKey = undefined) {
         if (Url != undefined && Url != '')
             this.AddVue(SelectId.replaceAll('_', ''), Url);
-        this.AddV_SelectBind(SelectId, V_Value, V_Text, V_Model);
+        this.AddV_SelectBind(SelectId, SelectId, ValueKey, DisplayKey, ResultKey);
         return this;
     }
 
     /**
      * <select>：從靜態 html 或 指定來源綁定
+     * @param {any} SourceKey 指定來源
      * @param {any} SelectId Dom Id
-     * @param {any} V_Value 可為 undefined，option value 值
-     * @param {any} V_Text 可為 undefined，option 顯示字樣
-     * @param {any} V_Model 可為 undefined，綁定選擇欄位
-     * @param {any} V_ForKey 指定來源
+     * @param {any} ValueKey 可為 undefined，option value 值
+     * @param {any} DisplayKey 可為 undefined，option 顯示字樣
+     * @param {any} ResultKey 可為 undefined，綁定選擇欄位
      */
-    AddV_SelectBind(SelectId, V_Value = undefined, V_Text = undefined, V_Model = undefined, V_ForKey = undefined) {
+    AddV_SelectBind(SelectId, SourceKey = undefined, ValueKey = undefined, DisplayKey = undefined, ResultKey = undefined) {
+
+        if (SourceKey == undefined) {
+            ResultKey ??= `Result.${SelectId}`;
+            this.AddV_Model(SelectId, ResultKey);
+            return this;
+        }
+
+        //if (!SourceKey.includes('.'))
+        //    SourceKey = `${SourceKey}`;
 
         let V_ForIn = `Item`;
-        V_Text ??= `Item`;
-        V_Value ??= `Item`;
-        V_Model ??= `Result.${V_Value != 'Item' ? V_Value : SelectId.replaceAll('_', '')}`;
+        DisplayKey ??= `Item`;
+        ValueKey ??= `Item`;
+        ResultKey ??= ValueKey != 'Item' ? ValueKey : SelectId.replaceAll('_', '');
 
-        if (!V_Model.includes('.'))
-            V_Model = `Result.${V_Model}`;
-
-        V_ForKey ??= `${SelectId}`.replaceAll('#', '').replaceAll('_', '');
+        if (!ResultKey.includes('.'))
+            ResultKey = `Result.${ResultKey}`;
 
         SelectId = this.ToJQueryName(SelectId);
-        this.AddV_Model(SelectId, V_Model);
+        this.AddV_Model(SelectId, ResultKey);
 
-        if (!V_Text.includes('Item') && !V_Text.includes('.'))
-            V_Text = `${V_ForIn}.${V_Text}`;
+        if (!DisplayKey.includes('Item') && !DisplayKey.includes('.'))
+            DisplayKey = `${V_ForIn}.${DisplayKey}`;
 
-        if (!V_Value.includes('Item') && !V_Value.includes('.'))
-            V_Value = `${V_ForIn}.${V_Value}`;
+        if (!ValueKey.includes('Item') && !ValueKey.includes('.'))
+            ValueKey = `${V_ForIn}.${ValueKey}`;
 
         let OptionObj = $('<option>');
         this.InsertAttrToJQuery(OptionObj, {
-            'v-for': `${V_ForIn} in ${V_ForKey}`,
-            'v-text': `${V_Text}`,
-            ':value': `${V_Value}`
+            'v-for': `${V_ForIn} in ${SourceKey}`,
+            'v-text': `${DisplayKey}`,
+            ':value': `${ValueKey}`
         });
 
         let SelectObj = $(SelectId);
@@ -498,28 +504,28 @@ class VueModel {
 
         this.AddVue(ObjectId, Url);
         let ObjectIdReplace = this.ToReplaceObjectId(ObjectId);
-        let DisplayValueKey = `Result.${ObjectIdReplace}`;
+        let SourceKey = `Result.${ObjectIdReplace}`;
 
-        this.AddV_CheckboxFrom(ObjectId, DisplayValueKey, ResultKey, Render, CheckboxClass);
+        this.AddV_CheckboxFrom(ObjectId, SourceKey, ResultKey, Render, CheckboxClass);
         return this;
     }
 
     /**
      * <input type="checkbox">：從 指定資料來源 建構
      * @param {any} ObjectId Dom Id
-     * @param {any} DisplayValueKey 可為 undefined，指定資料來源
+     * @param {any} SourceKey 可為 undefined，指定資料來源
      * @param {any} ResultKey 可為 undefined，指定結果欄位
      * @param {any} Render 可為 undefined，自訂渲染 html，預設為 <label>@Checkbox　@Display</label>
      * @param {any} CheckboxClass checkbox class 參數
      */
-    AddV_CheckboxFrom(ObjectId, DisplayValueKey = undefined, ResultKey = undefined, Render = undefined, CheckboxClass = undefined) {
+    AddV_CheckboxFrom(ObjectId, SourceKey = undefined, ResultKey = undefined, Render = undefined, CheckboxClass = undefined) {
 
         //去除 _
         let ObjectIdReplace = this.ToReplaceObjectId(ObjectId);
         //預設資料來源
-        DisplayValueKey = DisplayValueKey ?? `Result.${ObjectIdReplace}`;
-        if (!DisplayValueKey.includes('.')) //預設從 Result.{}
-            DisplayValueKey = `Result.${DisplayValueKey}`;
+        SourceKey = SourceKey ?? `Result.${ObjectIdReplace}`;
+        if (!SourceKey.includes('.')) //預設從 Result.{}
+            SourceKey = `Result.${SourceKey}`;
 
         CheckboxClass = CheckboxClass ?? '';
         Render = Render ?? '<label>@Checkbox @Display</label>';
@@ -528,7 +534,7 @@ class VueModel {
         ResultKey = ResultKey ?? ObjectIdReplace;
 
         //建立 Dom Source
-        if (!this.CreateDomSourceFrom(ObjectId, DisplayValueKey))
+        if (!this.CreateDomSourceFrom(ObjectId, SourceKey))
             return this;
 
         let ChangeEventName = `OnCheckboxChange_${ObjectIdReplace}`;
@@ -537,10 +543,11 @@ class VueModel {
 
         this.AddV_For(ObjectId, `DomSource.${ObjectIdReplace}`);
 
+        let ItemId = `'${ObjectId}_' + Item.Value`;
         let InputAttr = [
-            `:id="Item.Value"`,
-            `:checked="${CheckedEventName}(Item.Value)"`,
-            `v-on:change="${ChangeEventName}(Item.Value)"`,
+            `:id="${ItemId}"`,
+            `:checked="${CheckedEventName}(${ItemId}, Item.Value)"`,
+            `v-on:change="${ChangeEventName}(${ItemId}, Item.Value)"`,
             `:value="Item.Value"`,
             `class="${CheckboxClass}"`,
         ];
@@ -578,6 +585,22 @@ class VueModel {
         return this;
     }
 
+    AddV_CheckboxBindMult(ResultKey, ObjectKeyValue = {}) {
+        let AllKey = Object.keys(ObjectKeyValue);
+        for (let Idx in AllKey) {
+            let Key = AllKey[Idx];
+            let Value = ObjectKeyValue[Key];
+
+            if (Value == undefined || Value == '')
+                Value = Key;
+            else if (typeof Value === "object")
+                Value = $(Value).val();
+
+            this.AddV_CheckboxBind(Key, Value, ResultKey);
+        }
+        return this;
+    }
+
     AddV_Checkbox_Other(ObjectId, ResultKey = undefined, Render = undefined, CheckboxAttr = {}, TextAttr = {}) {
 
         let ObjectIdReplace = this.ToReplaceObjectId(ObjectId);
@@ -600,7 +623,7 @@ class VueModel {
 
         Render = Render.replaceAll('@Checkbox', CheckboxRender).replaceAll('@Text', TextRender);
 
-        $(this.ToJQueryName(ObjectId)).append(Render);
+        $(this.ToJQueryName(ObjectId)).parent().append(Render);
         return this;
     }
 
@@ -627,24 +650,25 @@ class VueModel {
 
         this.AddVue(ObjectId, Url);
         let ObjectIdReplace = this.ToReplaceObjectId(ObjectId);
-        let DisplayValueKey = `Result.${ObjectIdReplace}`;
+        let SourceKey = `Result.${ObjectIdReplace}`;
 
-        this.AddV_RadioFrom(ObjectId, DisplayValueKey, ResultKey, Render, RadioClass);
+        this.AddV_RadioFrom(ObjectId, SourceKey, ResultKey, Render, RadioClass);
         return this;
     }
 
-    AddV_RadioFrom(ObjectId, DisplayValueKey, ResultKey = undefined, Render = undefined, RadioClass = undefined) {
+    AddV_RadioFrom(ObjectId, SourceKey, ResultKey = undefined, Render = undefined, RadioClass = undefined) {
 
         let ObjectIdReplace = ObjectId.replaceAll('_', '');
-        DisplayValueKey = DisplayValueKey ?? `Result.${ObjectIdReplace}`;
-        if (!DisplayValueKey.includes('.'))
-            DisplayValueKey = `Result.${DisplayValueKey}`;
+
+        SourceKey = SourceKey ?? `Result.${ObjectIdReplace}`;
+        if (!SourceKey.includes('.'))
+            SourceKey = `Result.${SourceKey}`;
 
         RadioClass = RadioClass ?? '';
         Render = Render ?? '<label>@Radio @Display</label>';
         ResultKey = ResultKey ?? ObjectIdReplace;
 
-        if (!this.CreateDomSourceFrom(ObjectId, DisplayValueKey))
+        if (!this.CreateDomSourceFrom(ObjectId, SourceKey))
             return this;
 
         let ChangeEventName = `OnRadioChange_${ObjectIdReplace}`;
@@ -653,10 +677,11 @@ class VueModel {
 
         this.AddV_For(ObjectId, `DomSource.${ObjectIdReplace}`);
 
+        let ItemId = `'${ObjectId}_' + Item.Value`;
         let InputAttr = [
-            `:id="Item.Value"`,
-            `:checked="${CheckedEventName}(Item.Value)"`,
-            `v-on:change="${ChangeEventName}(Item.Value)"`,
+            `:id="${ItemId}"`,
+            `:checked="${CheckedEventName}(${ItemId}, Item.Value)"`,
+            `v-on:change="${ChangeEventName}(${ItemId}, Item.Value)"`,
             `:value="Item.Value"`,
             `class="${RadioClass}"`,
             `name="${ObjectIdReplace}"`,
@@ -695,7 +720,24 @@ class VueModel {
         return this;
     }
 
-    AddV_Radio_Other(ObjectId, ResultKey = undefined, Render = undefined, CheckboxAttr = {}, TextAttr = {}) {
+
+    AddV_RadioBindMult(ResultKey, ObjectKeyValue = {}) {
+        let AllKey = Object.keys(ObjectKeyValue);
+        for (let Idx in AllKey) {
+            let Key = AllKey[Idx];
+            let Value = ObjectKeyValue[Key];
+
+            if (Value == undefined || Value == '')
+                Value = Key;
+            else if (typeof Value === "object")
+                Value = $(Value).val();
+
+            this.AddV_RadioBind(Key, Value, ResultKey);
+        }
+        return this;
+    }
+
+    AddV_Radio_Other(ObjectId, ResultKey = undefined, Render = undefined, RadioAttr = {}, TextAttr = {}) {
 
         let ObjectIdReplace = this.ToReplaceObjectId(ObjectId);
         Render = Render ?? `<label>@Checkbox 其它：</label>@Text`;
@@ -704,12 +746,13 @@ class VueModel {
         let CheckboxFuncName = `OnOtherChangeRadio_${ObjectIdReplace}`;
         let TextFuncName = `OnOtherChangeText_${ObjectIdReplace}`;
 
-        this.AddEvent_Chechbox_Other(ResultKey, CheckboxFuncName, TextFuncName)
+        this.AddEvent_Radio_Other(ResultKey, CheckboxFuncName, TextFuncName)
 
-        CheckboxAttr['v-on:change'] = `${CheckboxFuncName}($event)`;
+        RadioAttr['v-on:change'] = `${CheckboxFuncName}($event)`;
+        RadioAttr['name'] = ObjectIdReplace;
         TextAttr['v-on:change'] = `${TextFuncName}($event)`;
 
-        let CheckboxAttrList = this.ConvertAttrToArray(CheckboxAttr);
+        let CheckboxAttrList = this.ConvertAttrToArray(RadioAttr);
         let TextAttrList = this.ConvertAttrToArray(TextAttr);
 
         let CheckboxRender = `<input type="radio" ${CheckboxAttrList.join(' ')}/>`;
@@ -717,7 +760,7 @@ class VueModel {
 
         Render = Render.replaceAll('@Checkbox', CheckboxRender).replaceAll('@Text', TextRender);
 
-        $(this.ToJQueryName(ObjectId)).append(Render);
+        $(this.ToJQueryName(ObjectId)).parent().append(Render);
         return this;
     }
     // #endregion
@@ -731,6 +774,7 @@ class VueModel {
     AddEvent_Checkbox_Change(Key, FuncName) {
         FuncName = FuncName.replaceAll('(', '').replaceAll(')', '');
         this.AddFunction(FuncName, (ObjectId, TrueValue) => {
+
             let ResultColumn = this.Result[Key];
 
             ObjectId = ObjectId ?? TrueValue;
@@ -778,8 +822,6 @@ class VueModel {
         this.AddEvent_Checkbox_Checked(Key, CheckedFuncName);
         return this;
     }
-
-
 
     AddEvent_Checkbox_Change_YesNo(Key, FuncName) {
         FuncName = FuncName.replaceAll('(', '').replaceAll(')', '');
@@ -832,7 +874,7 @@ class VueModel {
         });
         return this;
     }
-    AddEvent_Chechbox_Other_Text(Key, FuncName) {
+    AddEvent_Chechbox_Other_Checkbox_Text(Key, FuncName) {
         FuncName = FuncName.replaceAll('(', '').replaceAll(')', '');
         this.AddFunction(FuncName, (DomObject) => {
 
@@ -861,7 +903,7 @@ class VueModel {
     }
     AddEvent_Chechbox_Other(Key, CheckboxFuncName, TextFuncName) {
         this.AddEvent_Chechbox_Other_Checkbox(Key, CheckboxFuncName);
-        this.AddEvent_Chechbox_Other_Text(Key, TextFuncName);
+        this.AddEvent_Chechbox_Other_Checkbox_Text(Key, TextFuncName);
         return this;
     }
     // #endregion
@@ -870,12 +912,12 @@ class VueModel {
     AddEvent_Radio_Change(Key, FuncName) {
         FuncName = FuncName.replaceAll('(', '').replaceAll(')', '');
         this.AddFunction(FuncName, (ObjectId, TrueValue) => {
+
             ObjectId = ObjectId ?? TrueValue;
             TrueValue = TrueValue ?? ObjectId;
 
             let JObject = $(this.ToJQueryName(ObjectId));
             let IsChecked = JObject.prop('checked');
-
             if (IsChecked)
                 this.Result[Key] = TrueValue;
         });
@@ -886,7 +928,9 @@ class VueModel {
         this.AddFunction(FuncName, (ObjectId, TrueValue) => {
             ObjectId = ObjectId ?? TrueValue;
             TrueValue = TrueValue ?? ObjectId;
-            return this.Result[Key] == TrueValue;
+
+            let IsCheck = this.Result[Key] == TrueValue;
+            return IsCheck;
         });
         return this;
     }
@@ -895,8 +939,48 @@ class VueModel {
         this.AddEvent_Radio_Checked(Key, CheckedFuncName);
         return this;
     }
-    AddEvent_Radio_Other(Key, RadioFuncName, TextFuncName) {
 
+    AddEvent_Radio_Other_Radio(Key, FuncName) {
+        FuncName = FuncName.replaceAll('(', '').replaceAll(')', '');
+        this.AddFunction(FuncName, (DomObject) => {
+
+            let CheckedKey = `IsChecked_${Key}`;
+            let TrueValue = this.TempResult[Key];
+
+            let JObject = $(DomObject.target);
+            let IsChecked = JObject.prop('checked');
+            if (IsChecked && TrueValue != undefined && TrueValue != null && TrueValue != '')
+                this.Result[Key] = TrueValue;
+            else
+                delete this.Result[Key];
+
+            this.TempResult[CheckedKey] = IsChecked;
+        });
+        return this;
+    }
+    AddEvent_Radio_Other_Radio_Text(Key, FuncName) {
+        FuncName = FuncName.replaceAll('(', '').replaceAll(')', '');
+        this.AddFunction(FuncName, (DomObject) => {
+
+            let JObject = $(DomObject.target);
+            let NewTrueValue = JObject.val();
+
+            let CheckedKey = `IsChecked_${Key}`;
+            let IsChecked = this.TempResult[CheckedKey];
+            if (IsChecked && NewTrueValue != undefined && NewTrueValue != null && NewTrueValue != '')
+                this.Result[Key] = NewTrueValue;
+            else
+                delete this.Result[Key];
+
+            this.TempResult[Key] = NewTrueValue;
+        });
+        return this;
+    }
+
+    AddEvent_Radio_Other(Key, RadioFuncName, TextFuncName) {
+        this.AddEvent_Radio_Other_Radio(Key, RadioFuncName);
+        this.AddEvent_Radio_Other_Radio_Text(Key, TextFuncName);
+        return this;
     }
     // #endregion
 
@@ -929,7 +1013,7 @@ class VueModel {
 
         if (typeof SendData === 'object' && Object.keys(SendData).length > 0)
             SendData = JSON.stringify(SendData);
-         
+
         this.AjaxOptions = {
             type: SendType,
             url: SendUrl,
@@ -1272,7 +1356,11 @@ class VueModel {
      * 判斷 ObjectId 是否為 JQueryName:'#ObjectId'
      * @param {any} ObjectId 若不包含 '#' 字 則回傳 `#${ObjectId}`
      */
-    ToJQueryName(ObjectId) { return ObjectId.includes('#') ? ObjectId : `#${ObjectId}`; }
+    ToJQueryName(ObjectId) {
+        if (ObjectId == undefined)
+            return ObjectId;
+        return ObjectId.includes('#') ? ObjectId : `#${ObjectId}`;
+    }
 
     ToReplaceObjectId(ObjectId) {
         let Ret = ObjectId.replaceAll('_', '').replaceAll('#', '');
@@ -1318,26 +1406,33 @@ class VueModel {
     // #endregion
 
     // #region Process DomSource
-    CreateDomSourceFrom(ObjectId, DisplayValueKey) {
+    CreateDomSource(ObjectId, DomSource) {
+        let ObjectIdReplace = this.ToReplaceObjectId(ObjectId);
+        this.DomSource[ObjectIdReplace] = DomSource;
+        return true;
+    }
+
+    CreateDomSourceFrom(ObjectId, SourceKey) {
 
         let ObjectIdReplace = this.ToReplaceObjectId(ObjectId);
 
         let GetSource = this.VueResult;
-        let DisplayArray = DisplayValueKey.split('.');
-        for (let Idx in DisplayArray) {
-            let Key = DisplayArray[Idx];
+        let SourceArray = SourceKey.split('.');
+        for (let Idx in SourceArray) {
+            let Key = SourceArray[Idx];
             GetSource = GetSource[Key];
         }
         let SetDomSource = this.ConvertDomSource(GetSource);
         if (SetDomSource == undefined)
             return false;
 
-        this.DomSource[ObjectIdReplace] = SetDomSource;
+        this.CreateDomSource(ObjectIdReplace, SetDomSource);
         return true;
     }
 
     UpdateDomSource(Key, Source) {
         let GetSource = this.ConvertDomSource(Source);
+
         if (GetSource == undefined)
             return false;
 
@@ -1347,13 +1442,14 @@ class VueModel {
     }
 
     ConvertDomSource(Source) {
+
         let ReturnSource = [];
         if (Source == undefined)
             Source = {};
 
         if (typeof Source === "object") {
-            if (Array.isArray(Source)) {
-                if (Array.isArray(Source[0])) {
+            if (Array.isArray(Source)) { // {[],[]}
+                if (Array.isArray(Source[0])) { // 
                     for (let Idx in Source[0]) {
                         let Display = Source[0][Idx];
                         let Value = Source[1][Idx];
@@ -1368,10 +1464,10 @@ class VueModel {
                         let Item = Source[Idx];
                         let AllKey = Object.keys(Item);
                         let DisplayKey = AllKey[0];
-                        let ValueKey = AllKey[1];
+                        let ValueKey = AllKey.length > 1 ? AllKey[1] : Item[DisplayKey];
                         ReturnSource.push({
-                            Display: Item[DisplayKey],
-                            Value: Item[ValueKey]
+                            Display: DisplayKey,
+                            Value: ValueKey
                         });
                     }
                 }
