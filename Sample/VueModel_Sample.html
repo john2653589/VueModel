@@ -22,12 +22,12 @@
             <!-- Label Sample -->
             <div>
                 <label>Label : </label>
-                <label id="EquipNo"></label>
+                <label id="__EquipNo__"></label>
             </div>
 
             <div>
                 <label>Label : </label>
-                <label id="EquipName"></label>
+                <label id="__EquipName__"></label>
             </div>
 
             <hr />
@@ -122,6 +122,10 @@
         // Input
         .AddV_Input('InputTest')
         // Label or Some Display Text
+        .AddV_TextMult({
+            __EquipNo__,
+            __EquipName__,
+        })
         .AddV_Text('EquipNo')
         .AddV_Text('EquipName')
         // Select From Call Api

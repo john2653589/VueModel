@@ -252,7 +252,8 @@ class VueModel {
     AddV_TextMult(ObjectIdKey = {}, KeyFor = undefined) {
         let AllKeys = Object.keys(ObjectIdKey);
         for (let Idx in AllKeys) {
-            let GetKey = AllKeys[Idx];
+            let ObjectId = AllKeys[Idx];
+            let GetKey = AllKeys[Idx].replaceAll('_', '');
             let GetVal = ObjectIdKey[GetKey];
 
             KeyFor ??= 'Result';
@@ -263,7 +264,7 @@ class VueModel {
             else if (typeof GetVal === "string" && !GetVal.toString().includes('.') && KeyFor != undefined)
                 GetVal = `${KeyFor}.${GetVal}`;
 
-            this.AddV_Text(GetKey, GetVal);
+            this.AddV_Text(ObjectId, GetVal);
         }
         return this;
     }
