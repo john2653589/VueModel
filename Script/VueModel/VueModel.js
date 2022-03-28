@@ -1,5 +1,5 @@
 ﻿/**
- *  VueModel.js v1.7.12
+ *  VueModel.js v1.7.13
  *  From Rugal Tu
  *  Based on Vue.js v2.6.12、jQuery Library v3.5.1
  * */
@@ -11,7 +11,7 @@ class VueModel {
 
         this.ElementName = _ElementName = this.ToJQueryName(_ElementName);
         this.UrlKeyDic = {};
-        this.UrlKeyDic[this.ElementName] = _Url;
+        this.UrlKeyDic[this.ToReplaceObjectId(this.ElementName)] = _Url;
 
         this.SubmitUrl = {};
         this.SubmitCheckColumnKeys = {};
@@ -352,9 +352,10 @@ class VueModel {
      * @param {any} ResultKey 可為 undefined，綁定選擇欄位
      */
     AddV_Select(SelectId, Url = '', ValueKey = undefined, DisplayKey = undefined, ResultKey = undefined) {
+        let ReplaceId = this.ToReplaceObjectId(SelectId);
         if (Url != undefined && Url != '')
-            this.AddVue(SelectId.replaceAll('_', ''), Url);
-        this.AddV_SelectBind(SelectId, SelectId, ValueKey, DisplayKey, ResultKey);
+            this.AddVue(ReplaceId, Url);
+        this.AddV_SelectBind(SelectId, ReplaceId, ValueKey, DisplayKey, ResultKey);
         return this;
     }
 
@@ -1001,7 +1002,7 @@ class VueModel {
         this.MethodType = MethodType ?? this.MethodType;
 
         Key ??= this.ElementName;
-        Key = Key.replaceAll('_', '');
+        Key = this.ToReplaceObjectId(Key);
 
         let Caller = this;
         let SuccessCallback = this.AjaxSuccess;
@@ -1014,6 +1015,7 @@ class VueModel {
         if (typeof SendData === 'object' && Object.keys(SendData).length > 0)
             SendData = JSON.stringify(SendData);
 
+        let UpdateKey = Key == this.ToReplaceObjectId(this.ElementName) ? 'Result' : Key;
         this.AjaxOptions = {
             type: SendType,
             url: SendUrl,
@@ -1021,7 +1023,7 @@ class VueModel {
             dataType: 'JSON',
             contentType: 'application/json;charset=utf-8',
             success: function (Result) {
-                SuccessCallback.call(Caller, Key, Result);
+                SuccessCallback.call(Caller, UpdateKey, Result);
                 OnSuccess?.call(Caller, Result);
             },
             error: function (Error) {
@@ -1366,6 +1368,14 @@ class VueModel {
         let Ret = ObjectId.replaceAll('_', '').replaceAll('#', '');
         return Ret;
     }
+
+    IsNotNullAndEmpty(AssignString) {
+        AssignString = AssignString.replaceAll(' ', '');
+        if (AssignString != undefined && AssignStringn != '')
+            return true;
+        return false;
+    }
+
 
     /**
      * *預設內部 Function

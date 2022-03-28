@@ -22,7 +22,12 @@
             <!-- Label Sample -->
             <div>
                 <label>Label : </label>
-                <label id="LabelTest"></label>
+                <label id="EquipNo"></label>
+            </div>
+
+            <div>
+                <label>Label : </label>
+                <label id="EquipName"></label>
             </div>
 
             <hr />
@@ -111,12 +116,14 @@
     let SelectUrl = 'http://59.125.25.233:81/api/VueModel/Select';
     let CheckboxUrl = 'http://59.125.25.233:81/api/VueModel/Checkbox';
     let RadioUrl = 'http://59.125.25.233:81/api/VueModel/Radio';
+    let DetailUrl = 'http://59.125.25.233:81/api/VueModel/GetDataFromId';
 
-    var Model = new VueModel('', {}, {}, 'PageContent')
+    var Model = new VueModel(DetailUrl, {}, {}, 'PageContent')
         // Input
         .AddV_Input('InputTest')
         // Label or Some Display Text
-        .AddV_Text('LabelTest', 'Result.InputTest')
+        .AddV_Text('EquipNo')
+        .AddV_Text('EquipName')
         // Select From Call Api
         .AddV_Select('CountySelect', SelectUrl, 'CountyId', 'CountyName')
         // Select From Html
@@ -145,6 +152,7 @@
         .Ajax({}, 'CountySelect')
         .Ajax({}, 'CheckboxApi')
         .Ajax({}, 'RadioApi')
+        .Ajax({ Id: 1 })
         ;
 
     var Timer = setInterval(UpdateResultShow, 100);
