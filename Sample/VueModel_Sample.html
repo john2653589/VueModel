@@ -39,6 +39,12 @@
                     <option value="">=== Select ===</option>
                 </select>
             </div>
+            <div>
+                <label>Select From Api2 : </label>
+                <select id="EquipEntityTypeId">
+                    <option value="">=== Select ===</option>
+                </select>
+            </div>
 
             <div>
                 <label>Select From Static Html : </label>
@@ -84,6 +90,16 @@
                     <label><input id="RdBind2" name="RadioBind" type="radio" value="RadioBind2" /> RdBindColumn2</label>
                 </div>
             </div>
+
+            <hr />
+
+            <div>
+                <label>Upload File : </label>
+                <div id="FileDiv">
+                    <label>File1 <input id="TestFile" type="file" /></label>
+                </div>
+            </div>
+
         </div>
 
         <!-- Result -->
@@ -98,6 +114,7 @@
                     <option value="PageData">PageData</option>
                     <option value="DomSource">Dom Source</option>
                     <option value="TempResult">Temp Result</option>
+                    <option value="FileResult">File Result</option>
                 </select>
                 <br />
                 <textarea class="mt-3" id="ResultShow" readonly style="width:100%; height:100%;"></textarea>
@@ -150,13 +167,19 @@
             RdBind1: 'RdCusBindValue',
             RdBind2
         })
+
+        .AddV_Select('EquipEntityTypeId', 'http://59.125.25.233/Equip/api/Common/GetEntityType', 'EquipEntityTypeId', 'EquipEntityTypeName')
         // Set Default Value
         .UpdateVueModel(Result)
         // Call Api Use Ajax
-        .Ajax({}, 'CountySelect')
-        .Ajax({}, 'CheckboxApi')
-        .Ajax({}, 'RadioApi')
-        .Ajax({ Id: 1 })
+        //.Ajax({}, 'CountySelect')
+        //.Ajax({}, 'CheckboxApi')
+        //.Ajax({}, 'RadioApi')
+
+        .AddV_SingleFile('TestFile')
+        .Ajax({}, 'EquipEntityTypeId')
+        //.AddV_SingleFile()
+        //.Ajax({ Id: 1 })
         ;
 
     var Timer = setInterval(UpdateResultShow, 100);
@@ -165,3 +188,4 @@
         $("#ResultShow").val(JSON.stringify(Model[StorageKey], null, 2));
     }
 </script>
+ 

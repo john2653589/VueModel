@@ -1,5 +1,5 @@
 ﻿/**
- *  VueModel.js v1.7.13
+ *  VueModel.js v1.7.18
  *  From Rugal Tu
  *  Based on Vue.js v2.6.12、jQuery Library v3.5.1
  * */
@@ -9,6 +9,7 @@ class VueModel {
         this._Vue;
         this._VueOptions = {};
 
+        this.Domain = undefined;
         this.ElementName = _ElementName = this.ToJQueryName(_ElementName);
         this.UrlKeyDic = {};
         this.UrlKeyDic[this.ToReplaceObjectId(this.ElementName)] = _Url;
@@ -21,14 +22,18 @@ class VueModel {
         this.VueResult = {
             PageData: _PageData,
             Result: {},
+            FileResult: {},
             DomSource: {},
             DomSourceKey: {},
+            DomEventFunc: {},
             TempResult: {},
         };
         this.OnSuccess = function (Result) { };
         this.SuccessBackPage = function () { };
         this.OnError = function (Error) { };
         this.OnComplete = function () { };
+        this.AjaxSuccessCheck = undefined;
+        this.SubmitSuccessCheck = undefined;
 
         this.IsMountedShow = IsMountedShow;
 
@@ -48,9 +53,12 @@ class VueModel {
     set PageData(SetPageData) { this.VueResult.PageData = SetPageData; }
     get Result() { return this.VueResult.Result; }
     set Result(SetResult) { this.VueResult.Result = SetResult; }
+    get FileResult() { return this.VueResult.FileResult; }
     get DomSource() { return this.VueResult.DomSource; }
     get DomSourceKey() { return this.VueResult.DomSourceKey; }
+    get DomEventFunc() { return this.VueResult.DomEventFunc; }
     get TempResult() { return this.VueResult.TempResult; }
+
     // #endregion
 
     // #region Init Native Vue
@@ -59,6 +67,22 @@ class VueModel {
      * @param {any} _VueOptions
      */
     InitOption(_VueOptions) {
+
+        try {
+            if (Domain != undefined && this.Domain == undefined)
+                this.Domain = Domain;
+        } catch { }
+
+        try {
+            if (AjaxSuccessCheck != undefined && this.AjaxSuccessCheck == undefined)
+                this.AjaxSuccessCheck = AjaxSuccessCheck;
+        } catch { }
+
+        try {
+            if (SubmitSuccessCheck != undefined && this.SubmitSuccessCheck == undefined)
+                this.SubmitSuccessCheck = SubmitSuccessCheck;
+        } catch { }
+
         let ElementName = this.ElementName;
         let IsMountedShow = this.IsMountedShow;
         let StaticOptions = {
@@ -127,6 +151,21 @@ class VueModel {
         }
         return this;
     }
+
+    AddDomain(_Domain) {
+        this.Domain = _Domain;
+        return this;
+    }
+
+    AddSuccessCheck_Ajax(CheckFunc = (Result) => true) {
+        this.AjaxSuccessCheck = CheckFunc;
+        return this;
+    }
+    AddSuccessCheck_Submit(CheckFunc = (Result) => true) {
+        this.SubmitSuccessCheck = CheckFunc;
+        return this;
+    }
+
     // #endregion
 
     // #region Add For Submit
@@ -236,9 +275,10 @@ class VueModel {
      * @param {any} ObjectId 不得為 undefined
      * @param {any} Key 若為 undefined 則使用 Result 作為 Key 值
      */
-    AddV_Text(ObjectId, Key = undefined) {
+    AddV_Text(ObjectId, Key = undefined, Format = undefined) {
         Key ??= `Result.${ObjectId.replace('_', '')}`;
-
+        if (Format != undefined)
+            Key = `$options.filters.${Format}(${Key})`;
         ObjectId = this.ToJQueryName(ObjectId);
         $(ObjectId).attr('v-text', Key);
         return this;
@@ -249,7 +289,7 @@ class VueModel {
      * @param {any} ObjectIdKey { ObjectId : Key } 不得為 undefined
      * @param {any} KeyFor 若為 undefined 則使用 Result 作為 KeyFor 值
      */
-    AddV_TextMult(ObjectIdKey = {}, KeyFor = undefined) {
+    AddV_TextMult(ObjectIdKey = {}, KeyFor = undefined, Format = undefined) {
         let AllKeys = Object.keys(ObjectIdKey);
         for (let Idx in AllKeys) {
             let ObjectId = AllKeys[Idx];
@@ -264,7 +304,7 @@ class VueModel {
             else if (typeof GetVal === "string" && !GetVal.toString().includes('.') && KeyFor != undefined)
                 GetVal = `${KeyFor}.${GetVal}`;
 
-            this.AddV_Text(ObjectId, GetVal);
+            this.AddV_Text(ObjectId, GetVal, Format);
         }
         return this;
     }
@@ -279,9 +319,17 @@ class VueModel {
     AddV_On(ObjectId, EventName, Key = undefined, Result = undefined) {
 
         Key ??= `On${ObjectId}${EventName}`;
-        if (!Key.includes('(') && !Key.includes(')'))
-            Key = `${Key}()`;
 
+        if (Key.substr(Key.length - 2, 2) == '()')
+            Key = Key.substr(0, Key.length - 2);
+
+        this.AddV_On_Base(ObjectId, EventName, Key, Result);
+        return this;
+    }
+
+    AddV_On_Base(ObjectId, EventName, Key = undefined, Result = undefined) {
+
+        Key ??= `On${ObjectId}${EventName}`;
         ObjectId = this.ToJQueryName(ObjectId);
         $(ObjectId).attr(`v-on:${EventName}`, Key);
         if (Result != undefined)
@@ -722,14 +770,13 @@ class VueModel {
         return this;
     }
 
-
     AddV_RadioBindMult(ResultKey, ObjectKeyValue = {}) {
         let AllKey = Object.keys(ObjectKeyValue);
         for (let Idx in AllKey) {
             let Key = AllKey[Idx];
             let Value = ObjectKeyValue[Key];
 
-            if (Value == undefined || Value == '')
+            if (Value == undefined || Value === '')
                 Value = Key;
             else if (typeof Value === "object")
                 Value = $(Value).val();
@@ -765,6 +812,44 @@ class VueModel {
         $(this.ToJQueryName(ObjectId)).parent().append(Render);
         return this;
     }
+
+    AddV_Radio_OnChecked(ObjectId, OnCheckedEvent = undefined) {
+        if (this.DomEventFunc[ObjectId] == undefined)
+            this.DomEventFunc[ObjectId] = {};
+
+        if (OnCheckedEvent != undefined)
+            this.DomEventFunc[ObjectId].OnCheckedEvent = OnCheckedEvent;
+
+        return this;
+    }
+
+    AddV_Radio_OnChange(ObjectId, OnChangeEvent) {
+        if (this.DomEventFunc[ObjectId] == undefined)
+            this.DomEventFunc[ObjectId] = {};
+        if (OnChangeEvent != undefined)
+            this.DomEventFunc[ObjectId].OnChangeEvent = OnChangeEvent;
+        return this;
+    }
+
+    AddV_SingleFile(InputId, UploadUrl, ButtonId = undefined, ResultKey = undefined) {
+
+        let ReplaceId = InputId.replaceAll('_', '');
+        ResultKey ??= `${ReplaceId}`;
+
+        this.AddSubmit(InputId, UploadUrl);
+
+        let SetResult = this.FileResult;
+        this.AddV_On_Base(InputId, 'change', undefined, (e) => {
+            let GetFile = e.target.files[0];
+            SetResult[ResultKey] = GetFile;
+        });
+
+        if (ButtonId != undefined)
+            this.AddV_Button(ButtonId, () => this.Submit_File(InputId));
+
+        return this;
+    }
+
     // #endregion
 
     // #region Add Event For Checkbox
@@ -781,6 +866,9 @@ class VueModel {
 
             ObjectId = ObjectId ?? TrueValue;
             TrueValue = TrueValue ?? ObjectId;
+
+            if (!isNaN(TrueValue))
+                TrueValue = Number(TrueValue);
 
             let FindIdx = ResultColumn.indexOf(TrueValue);
             let JObject = $(this.ToJQueryName(ObjectId));
@@ -809,7 +897,11 @@ class VueModel {
             if (!Array.isArray(this.Result[Key]))
                 this.Result[Key] = [];
 
-            return this.Result[Key].indexOf(TrueValue) > -1;
+            if (!isNaN(TrueValue))
+                TrueValue = Number(TrueValue);
+            let IsChecked = this.Result[Key].indexOf(TrueValue) > -1;
+
+            return IsChecked;
         });
         return this;
     }
@@ -913,15 +1005,27 @@ class VueModel {
     // #region Add Event For Radio
     AddEvent_Radio_Change(Key, FuncName) {
         FuncName = FuncName.replaceAll('(', '').replaceAll(')', '');
+
         this.AddFunction(FuncName, (ObjectId, TrueValue) => {
 
             ObjectId = ObjectId ?? TrueValue;
             TrueValue = TrueValue ?? ObjectId;
 
+            let OnCheckedEvent = this.DomEventFunc[ObjectId]?.OnCheckedEvent;
+            let OnChangeEvent = this.DomEventFunc[ObjectId]?.OnChangeEvent;
+
             let JObject = $(this.ToJQueryName(ObjectId));
             let IsChecked = JObject.prop('checked');
-            if (IsChecked)
+
+            TrueValue = this.ConvertBool(TrueValue);
+            if (IsChecked) {
                 this.Result[Key] = TrueValue;
+                if (OnCheckedEvent != undefined)
+                    OnCheckedEvent(IsChecked, TrueValue);
+            }
+
+            if (OnChangeEvent != undefined)
+                OnChangeEvent(IsChecked, TrueValue);
         });
         return this;
     }
@@ -931,7 +1035,15 @@ class VueModel {
             ObjectId = ObjectId ?? TrueValue;
             TrueValue = TrueValue ?? ObjectId;
 
+            let OnCheckedEvent = this.DomEventFunc[ObjectId]?.OnCheckedEvent;
+
+            if (TrueValue.toLowerCase() == 'true')
+                TrueValue = true;
+            else if (TrueValue.toLowerCase() == 'false')
+                TrueValue = false;
             let IsCheck = this.Result[Key] == TrueValue;
+            if (IsCheck && OnCheckedEvent != undefined)
+                OnCheckedEvent(IsCheck, TrueValue);
             return IsCheck;
         });
         return this;
@@ -1010,10 +1122,11 @@ class VueModel {
         let ErrorCallback = this.AjaxError;
         let CompleteCallback = this.AjaxComplete;
         let SendType = this.MethodType;
+        let SuccessCheck = this.AjaxSuccessCheck;
 
         let SendUrl = this.GetUrl(Key, SendData, SendType);
 
-        if (typeof SendData === 'object' && Object.keys(SendData).length > 0)
+        if (typeof SendData === 'object' && Object.keys(SendData).length > 0 && SendType == 'POST')
             SendData = JSON.stringify(SendData);
 
         let UpdateKey = Key == this.ToReplaceObjectId(this.ElementName) ? 'Result' : Key;
@@ -1024,8 +1137,11 @@ class VueModel {
             dataType: 'JSON',
             contentType: 'application/json;charset=utf-8',
             success: function (Result) {
-                SuccessCallback.call(Caller, UpdateKey, Result);
-                OnSuccess?.call(Caller, Result);
+                let IsSuccess = SuccessCheck == undefined ? true : SuccessCheck.call(Caller, Result);
+                if (IsSuccess) {
+                    SuccessCallback.call(Caller, UpdateKey, Result);
+                    OnSuccess?.call(Caller, Result);
+                }
             },
             error: function (Error) {
                 ErrorCallback.call(Caller, Error);
@@ -1068,6 +1184,7 @@ class VueModel {
             SendData = this.VueResult[Key];
             SendUrl = Param.Url;
         }
+        SendUrl = this.ConvertToUrl(SendUrl);
 
         if (SendParam != undefined)
             SendData = SendParam;
@@ -1075,6 +1192,7 @@ class VueModel {
         OnSuccess = _OnSuccess ?? Param.OnSuccess;
         OnError = _OnError ?? Param.OnError;
         OnComplate = _OnComplate ?? Param.OnComplate;
+        let SuccessCheck = this.SubmitSuccessCheck;
 
         let CheckModel = this.CheckSubmitModel(Key, SendData);
         if (!CheckModel.Check) {
@@ -1092,8 +1210,11 @@ class VueModel {
             dataType: 'JSON',
             contentType: 'application/json;charset=utf-8',
             success: function (Result) {
-                OnSuccess?.call(Caller, Result);
-                SuccessBackPage?.call(Caller);
+                let IsSuccess = SuccessCheck == undefined ? true : SuccessCheck.call(Caller, Result);
+                if (IsSuccess) {
+                    OnSuccess?.call(Caller, Result);
+                    SuccessBackPage?.call(Caller);
+                }
             },
             error: function (Error) {
                 OnError?.call(Caller, Error);
@@ -1107,6 +1228,60 @@ class VueModel {
         return this;
     }
 
+    Submit_File(Key, SendFile = undefined, _OnSuccess = undefined, _OnError = undefined, _OnComplate = undefined) {
+
+        let SuccessBackPage = this.SuccessBackPage;
+        let SendData, OnSuccess, OnError, OnComplate, SendUrl;
+        let Caller = this;
+        let Param = this.SubmitUrl[Key];
+
+        OnSuccess = _OnSuccess ?? Param.OnSuccess;
+        OnError = _OnError ?? Param.OnError;
+        OnComplate = _OnComplate ?? Param.OnComplate;
+
+        Key ??= this.ElementName;
+
+        SendData = this.FileResult[Key];
+        SendUrl = Param.Url;
+        SendUrl = this.ConvertToUrl(SendUrl);
+
+        if (SendFile != undefined)
+            SendData = SendFile;
+
+        let CheckModel = this.CheckSubmitModel(Key, SendData);
+        if (!CheckModel.Check) {
+            if (this.OnCheckFalse != undefined)
+                this.OnCheckFalse(CheckModel.FalseColumn);
+            return this;
+        }
+
+        let FileModel = this.ConvertSendFile(Key, SendData);
+
+        let SuccessCheck = this.SubmitSuccessCheck;
+        let SubmitOptions = {
+            type: 'POST',
+            url: SendUrl,
+            data: FileModel,
+            contentType: false,
+            processData: false,
+            success: function (Result) {
+                let IsSuccess = SuccessCheck == undefined ? true : SuccessCheck.call(Caller, Result);
+                if (IsSuccess) {
+                    OnSuccess?.call(Caller, Result);
+                    SuccessBackPage?.call(Caller);
+                }
+            },
+            error: function (Error) {
+                OnError?.call(Caller, Error);
+                alert('上傳失敗');
+            },
+            complete: function () {
+                OnComplate?.call(Caller);
+            },
+        };
+        $.ajax(SubmitOptions);
+        return this;
+    }
 
     SubmitCustom(Key, AjaxOption = {}) {
 
@@ -1260,9 +1435,17 @@ class VueModel {
         if (CheckColumns.length == 0)
             return CheckRet;
 
+        return this.CheckColumn(CheckColumns, Model);
+    }
+
+    CheckColumn(CheckColumns, Model) {
+        let CheckRet = {
+            Check: true,
+            FalseColumn: '',
+        };
         for (let Key in CheckColumns) {
             let Val = CheckColumns[Key];
-            if (Model[Key] == undefined || Model[Key] == '') {
+            if (Model[Key] == undefined || Model[Key] === '') {
                 CheckRet.Check = false;
                 CheckRet.FalseColumn = Val;
                 return CheckRet;
@@ -1299,24 +1482,8 @@ class VueModel {
     GetUrl(Key, SendData, MethodType) {
         //let UpperType = MethodType.toUpperCase();
         let SendUrl = this.UrlKeyDic[Key];
-        return SendUrl;
-        //if (UpperType == 'GET') {
-        //    if (typeof SendData === 'object') {
-        //        let Params = [];
-        //        let AllKeys = Object.keys(SendData);
-        //        for (let KeyIdx in AllKeys) {
-        //            let Key = AllKeys[KeyIdx];
-        //            let Val = SendData[Key];
-        //            Params.push(`${Key}=${Val}`);
-        //        }
-        //        let UrlParam = Params.join('&');
-        //        SendUrl = `${SendUrl}?${UrlParam}`;
-        //    }
-        //    else if (typeof SendData === 'string') {
-        //        SendUrl = `${SendUrl}?${SendData}`;
-        //    }
-        //}
-        //return SendUrl;
+        let ReturnUrl = this.ConvertToUrl(SendUrl);
+        return ReturnUrl;
     }
 
     /**
@@ -1395,6 +1562,15 @@ class VueModel {
                 }
             }
         } catch (ex) { }
+    }
+
+    ConvertToUrl(SendUrl) {
+        if (this.Domain != undefined) {
+            if (this.Domain[this.Domain.length - 1] != '/')
+                this.Domain += '/';
+            SendUrl = `${this.Domain}${SendUrl}`;
+        }
+        return SendUrl;
     }
 
     SetAttr(ObjectId, AttrName, AttrValue) {
@@ -1521,10 +1697,32 @@ class VueModel {
         return ReturnSource;
     }
 
+    ConvertBool(BoolValue) {
+        if (typeof BoolValue === 'string') {
+            if (BoolValue.toLowerCase() == 'true')
+                return true;
+            else if (BoolValue.toLowerCase() == 'false')
+                return false;
+        }
+        return BoolValue;
+    }
+
+    ConvertSendFile(Key, FileData) {
+        Key ??= 'File';
+        let SendForm = new FormData();
+        SendForm.append(Key, FileData);
+        return SendForm;
+    }
+
     IsDomSource(Key) {
         let AllKey = Object.keys(this.DomSource);
         let ReplaceKey = this.ToReplaceObjectId(Key);
         return AllKey.indexOf(ReplaceKey) >= 0;
     }
     // #endregion
+}
+
+var DefaultData;
+function Init(_DefaultData) {
+    DefaultData = JSON.parse(_DefaultData);
 }
