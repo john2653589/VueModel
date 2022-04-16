@@ -1,5 +1,5 @@
 ﻿/**
- *  VueModel.js v1.7.18
+ *  VueModel.js v1.7.19
  *  From Rugal Tu
  *  Based on Vue.js v2.6.12、jQuery Library v3.5.1
  * */
@@ -36,6 +36,7 @@ class VueModel {
         this.SubmitSuccessCheck = undefined;
 
         this.IsMountedShow = IsMountedShow;
+        this.IsDevelopment = true;
 
         this.OnCheckFalse = function (FalseColumn) { };
         this.InitOption(_VueOptions);
@@ -293,8 +294,8 @@ class VueModel {
         let AllKeys = Object.keys(ObjectIdKey);
         for (let Idx in AllKeys) {
             let ObjectId = AllKeys[Idx];
+            let GetVal = ObjectIdKey[ObjectId];
             let GetKey = AllKeys[Idx].replaceAll('_', '');
-            let GetVal = ObjectIdKey[GetKey];
 
             KeyFor ??= 'Result';
             if (typeof GetVal != "string" && KeyFor != undefined)
@@ -1126,9 +1127,11 @@ class VueModel {
 
         let SendUrl = this.GetUrl(Key, SendData, SendType);
 
+        if (this.IsDevelopment)
+            console.log(SendData);
+
         if (typeof SendData === 'object' && Object.keys(SendData).length > 0 && SendType == 'POST')
             SendData = JSON.stringify(SendData);
-
         let UpdateKey = Key == this.ToReplaceObjectId(this.ElementName) ? 'Result' : Key;
         this.AjaxOptions = {
             type: SendType,
@@ -1202,6 +1205,9 @@ class VueModel {
             return this;
         }
 
+        let IsDevelopment = this.IsDevelopment;
+        if (IsDevelopment)
+            console.log(SendData);
         let JsonModel = JSON.stringify(SendData);
         let SubmitOptions = {
             type: MethodType,
@@ -1218,6 +1224,8 @@ class VueModel {
             },
             error: function (Error) {
                 OnError?.call(Caller, Error);
+                if (IsDevelopment)
+                    console.log(Error);
                 alert('Request 錯誤');
             },
             complete: function () {
