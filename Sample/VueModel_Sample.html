@@ -100,24 +100,22 @@
                 </div>
             </div>
 
+            <hr />
+
+            <div>
+                <button id="BtnAddRepeat" class="Btn Btn-success">Add</button>
+                <br />
+                <div id="RepeatResult">
+                    <label><span id="TxtNo"></span> <input id="InputNo" /></label>
+                    <label><span id="TxtName"></span> <input id="InputName" /></label>
+                </div>
+            </div>
         </div>
 
         <!-- Result -->
         <div class="row justify-items-end">
             <div class="col-7 h-75 d-inline-block" style="position:fixed;">
-
-                <label>Vue Model Storage</label>
-                <br />
-                <select id="Storage">
-                    <option value="Result">Result</option>
-                    <option value="VueResult">Vue Result</option>
-                    <option value="PageData">PageData</option>
-                    <option value="DomSource">Dom Source</option>
-                    <option value="TempResult">Temp Result</option>
-                    <option value="FileResult">File Result</option>
-                </select>
-                <br />
-                <textarea class="mt-3" id="ResultShow" readonly style="width:100%; height:100%;"></textarea>
+                <div id="__VueModelResult__"></div>
             </div>
         </div>
     </div>
@@ -175,17 +173,20 @@
         //.Ajax({}, 'CountySelect')
         //.Ajax({}, 'CheckboxApi')
         //.Ajax({}, 'RadioApi')
+        .AddV_FileSingle('TestFile')
+        .AddV_Button('BtnAddRepeat', () => Model.Result.RepeatResult.push({}))
 
-        .AddV_SingleFile('TestFile')
-        .Ajax({}, 'EquipEntityTypeId')
-        //.AddV_SingleFile()
+        .AddV_Input('InputCol')
+        .AddV_Repeat('RepeatResult')
+        .AddV_Repeat_InputMult('RepeatResult', {
+            InputNo,
+            InputName,
+        })
+        .AddV_Text('TxtNo', `'TxtNo' + (Idx + 1)`)
+        .AddV_Text('TxtName', `'TxtName' + (Idx + 1)`)
+
+        //.Ajax({}, 'EquipEntityTypeId')
         //.Ajax({ Id: 1 })
+        .VueInit()
         ;
-
-    var Timer = setInterval(UpdateResultShow, 100);
-    function UpdateResultShow() {
-        let StorageKey = $("#Storage").val();
-        $("#ResultShow").val(JSON.stringify(Model[StorageKey], null, 2));
-    }
 </script>
- 

@@ -1,5 +1,5 @@
 ﻿/**
- *  VueModel.js v1.7.19
+ *  VueModel.js v1.7.23
  *  From Rugal Tu
  *  Based on Vue.js v2.6.12、jQuery Library v3.5.1
  * */
@@ -34,6 +34,7 @@ class VueModel {
         this.OnComplete = function () { };
         this.AjaxSuccessCheck = undefined;
         this.SubmitSuccessCheck = undefined;
+        this.ErrorAlert = undefined;
 
         this.IsMountedShow = IsMountedShow;
         this.IsDevelopment = true;
@@ -92,6 +93,26 @@ class VueModel {
                     $(ElementName).show();
             }
         };
+
+        let DevelopmentDiv = $("#__VueModelResult__")[0];
+        if (DevelopmentDiv != undefined) {
+            DevelopmentDiv.innerHTML =
+                `<label>Vue Model Storage</label>
+                <select id="__VueModelStorageKey__">
+                    <option value="Result">Result</option>
+                    <option value="VueResult">Vue Result</option>
+                    <option value="PageData">PageData</option>
+                    <option value="DomSource">Dom Source</option>
+                    <option value="TempResult">Temp Result</option>
+                    <option value="FileResult">File Result</option>
+                </select>
+                <br />
+                <textarea id="__VueModelOutput__" readonly style="width: 100%; height: 100%; margin-top: 20px;"></textarea>`;
+
+            let Timer = () => setInterval(this.DevelopmentOutput, 100, this);
+            Timer.call(this);
+        }
+
         $.extend(StaticOptions, _VueOptions);
         if ("mounted" in _VueOptions) {
             let UserMounted = _VueOptions.mounted;
@@ -126,6 +147,18 @@ class VueModel {
         return this;
     }
     // #endregion
+
+    // #region
+
+    DevelopmentOutput(ShowVueModel) {
+        let Key = $("#__VueModelStorageKey__").val();
+        let OutputObj = ShowVueModel[Key];
+        $("#__VueModelOutput__").val(JSON.stringify(OutputObj, null, 2));
+    }
+
+
+    // #endregion
+
 
     // #region Add Url And Reset VueResult
     /**
@@ -166,7 +199,10 @@ class VueModel {
         this.SubmitSuccessCheck = CheckFunc;
         return this;
     }
-
+    AddErrorAlert_Submit(AlertFunc = (Error) => { }) {
+        this.ErrorAlert = AlertFunc;
+        return this;
+    }
     // #endregion
 
     // #region Add For Submit
@@ -270,14 +306,16 @@ class VueModel {
         return this;
     }
 
-
     /**
      * 將 'v-text' Vue屬性加入至 ObjectId DOM
      * @param {any} ObjectId 不得為 undefined
      * @param {any} Key 若為 undefined 則使用 Result 作為 Key 值
      */
     AddV_Text(ObjectId, Key = undefined, Format = undefined) {
-        Key ??= `Result.${ObjectId.replace('_', '')}`;
+
+        let ReplaceId = this.ToReplaceObjectId(ObjectId);
+        Key ??= `Result.${ReplaceId}`;
+
         if (Format != undefined)
             Key = `$options.filters.${Format}(${Key})`;
         ObjectId = this.ToJQueryName(ObjectId);
@@ -343,10 +381,11 @@ class VueModel {
      * 將 'v-bind:{BindName}' Vue屬性加入至 ObjectId DOM
      * @param {any} ObjectId 不得為 undefined
      * @param {any} BindName 不得為 undefined
-     * @param {any} Key 若為 undefined 則使用 Result 作為 Key 值
+     * @param {any} Key 若為 undefined 則使用 Result.{ObjectId} 作為 Key 值
      */
     AddV_Bind(ObjectId, BindName, Key = undefined) {
-        Key ??= 'Result';
+        let ReplaceId = this.ToReplaceObjectId(ObjectId);
+        Key ??= `Result.${ReplaceId}`;
         ObjectId = this.ToJQueryName(ObjectId);
         $(ObjectId).attr(`v-bind:${BindName}`, Key);
         return this;
@@ -355,18 +394,20 @@ class VueModel {
     /**
      * 將 'v-for:{ForKey} in {Key}' Vue屬性加入至 ObjectId DOM
      * @param {any} ObjectId 不得為 undefined
-     * @param {any} Key 若為 undefined 則使用 Result 作為 Key 值
+     * @param {any} Key 若為 undefined 則使用 Result.{ObjectId} 作為 Key 值
      * @param {any} ForKey  若為 undefined 則使用 Item 作為 ForKey 值
      */
     AddV_For(ObjectId, Key = undefined, ForKey = undefined) {
-        ObjectId = this.ToJQueryName(ObjectId);
-        Key = this.CheckKey(Key);
+        let JQueryId = this.ToJQueryName(ObjectId);
+        let ReplaceId = this.ToReplaceObjectId(ObjectId);
 
-        if (ForKey == undefined)
-            ForKey = 'Item';
+        Key ??= `Result.${ReplaceId}`;
+        ForKey ??= '(Item, Idx)';
 
         let SetFor = `${ForKey} in ${Key}`;
-        $(ObjectId).attr(`v-for`, SetFor);
+
+        console.log(SetFor);
+        $(JQueryId).attr(`v-for`, SetFor);
 
         return this;
     }
@@ -832,7 +873,7 @@ class VueModel {
         return this;
     }
 
-    AddV_SingleFile(InputId, UploadUrl, ButtonId = undefined, ResultKey = undefined) {
+    AddV_FileSingle(InputId, UploadUrl, ButtonId = undefined, ResultKey = undefined) {
 
         let ReplaceId = InputId.replaceAll('_', '');
         ResultKey ??= `${ReplaceId}`;
@@ -851,6 +892,80 @@ class VueModel {
         return this;
     }
 
+    AddV_FileMult(ResultKey, InputIdKey, UploadUrl = undefined) {
+
+        if (UploadUrl != undefined)
+            this.AddSubmit(ResultKey, UploadUrl);
+        let SetResult = this.FileResult;
+        SetResult[ResultKey] = {};
+
+        let AllKey = Object.keys(InputIdKey);
+        for (let Idx in AllKey) {
+            let InputId = AllKey[Idx];
+            let Key = InputIdKey[InputId];
+
+            if (typeof Key === 'object')
+                Key = InputId;
+
+            let ReplaceKey = Key.replaceAll('_', '');
+            this.AddV_On_Base(InputId, 'change', undefined, (e) => {
+                let GetFile = e.target.files[0];
+                SetResult[ResultKey][ReplaceKey] = GetFile;
+            });
+        }
+        return this;
+    }
+
+    AddV_Repeat(RepeatKey, IsDefaultOne = true) {
+        this.AddV_For(RepeatKey);
+        if (this.Result[RepeatKey] == undefined)
+            this.Result[RepeatKey] = [];
+        if (IsDefaultOne)
+            this.Result[RepeatKey].push({});
+        return this;
+    }
+
+    AddV_Repeat_Id(ObjectId) {
+        let GetRepeatId = this.ConvertRepeatId(ObjectId);
+        this.AddV_Bind(ObjectId, 'id', GetRepeatId);
+        return this;
+    }
+
+    AddV_Repeat_InputMult(RepeatKey, ObjectId_ResultKey = {}) {
+        let AllKey = Object.keys(ObjectId_ResultKey);
+        for (let Idx in AllKey) {
+            let ObjectId = AllKey[Idx];
+            let ResultKey = ObjectId_ResultKey[ObjectId];
+
+            let ReplaceId = this.ToReplaceObjectId(ObjectId);
+            if (typeof ResultKey === 'object')
+                ResultKey = ReplaceId;
+
+            let RepeatResult = this.ConvertRepeatResult(RepeatKey, ResultKey);
+            this.AddV_Input(ObjectId, RepeatResult);
+            this.AddV_Repeat_Id(ObjectId);
+        }
+        return this;
+    }
+
+    AddV_Repeat_TextMult(RepeatKey, ObjectId_ResultKey = {}) {
+        let AllKey = Object.keys(ObjectId_ResultKey);
+        for (let Idx in AllKey) {
+            let ObjectId = AllKey[Idx];
+            let ResultKey = ObjectId_ResultKey[ObjectId];
+
+            let ReplaceId = this.ToReplaceObjectId(ObjectId);
+            if (typeof ResultKey === 'object')
+                ResultKey = ReplaceId;
+
+            let RepeatResult = this.ConvertRepeatResult(RepeatKey, ResultKey);
+            this.AddV_Text(ObjectId, RepeatResult);
+            this.AddV_Repeat_Id(ObjectId);
+        }
+        return this;
+    }
+
+  
     // #endregion
 
     // #region Add Event For Checkbox
@@ -1018,7 +1133,7 @@ class VueModel {
             let JObject = $(this.ToJQueryName(ObjectId));
             let IsChecked = JObject.prop('checked');
 
-            TrueValue = this.ConvertBool(TrueValue);
+            TrueValue = this.ConvertBoolOrNumber(TrueValue);
             if (IsChecked) {
                 this.Result[Key] = TrueValue;
                 if (OnCheckedEvent != undefined)
@@ -1172,6 +1287,8 @@ class VueModel {
 
         let SuccessBackPage = this.SuccessBackPage;
         let SendData, OnSuccess, OnError, OnComplate, SendUrl;
+        let ErrorAlert;
+
         let Caller = this;
 
         Key ??= this.ElementName;
@@ -1195,6 +1312,7 @@ class VueModel {
         OnSuccess = _OnSuccess ?? Param.OnSuccess;
         OnError = _OnError ?? Param.OnError;
         OnComplate = _OnComplate ?? Param.OnComplate;
+        ErrorAlert = this.ErrorAlert;
         let SuccessCheck = this.SubmitSuccessCheck;
 
         let CheckModel = this.CheckSubmitModel(Key, SendData);
@@ -1221,6 +1339,8 @@ class VueModel {
                     OnSuccess?.call(Caller, Result);
                     SuccessBackPage?.call(Caller);
                 }
+                else
+                    ErrorAlert?.call(Caller, Result);
             },
             error: function (Error) {
                 OnError?.call(Caller, Error);
@@ -1236,7 +1356,7 @@ class VueModel {
         return this;
     }
 
-    Submit_File(Key, SendFile = undefined, _OnSuccess = undefined, _OnError = undefined, _OnComplate = undefined) {
+    Submit_File(Key, SendParam = undefined, _OnSuccess = undefined, _OnError = undefined, _OnComplate = undefined) {
 
         let SuccessBackPage = this.SuccessBackPage;
         let SendData, OnSuccess, OnError, OnComplate, SendUrl;
@@ -1253,8 +1373,10 @@ class VueModel {
         SendUrl = Param.Url;
         SendUrl = this.ConvertToUrl(SendUrl);
 
-        if (SendFile != undefined)
-            SendData = SendFile;
+        if (SendParam != undefined) {
+            let UrlParam = this.ConvertUrlParam(SendParam);
+            SendUrl += `?${UrlParam}`;
+        }
 
         let CheckModel = this.CheckSubmitModel(Key, SendData);
         if (!CheckModel.Check) {
@@ -1714,12 +1836,79 @@ class VueModel {
         }
         return BoolValue;
     }
+    ConvertNumber(NumberValue) {
+        let RetNumber = -1;
+        if (!isNaN(NumberValue))
+            RetNumber = Number(NumberValue);
+        return RetNumber;
+    }
+    ConvertBoolOrNumber(ConvertValue) {
+
+        if (this.IsBool(ConvertValue))
+            return this.ConvertBool(ConvertValue);
+
+        return this.ConvertNumber(ConvertValue);
+    }
 
     ConvertSendFile(Key, FileData) {
         Key ??= 'File';
         let SendForm = new FormData();
-        SendForm.append(Key, FileData);
+
+        let AllKey = Object.keys(FileData);
+        if (AllKey.length > 1) {
+            for (let Idx in AllKey) {
+                let GetKey = AllKey[Idx];
+                let GetFile = FileData[GetKey];
+                SendForm.append(GetKey, GetFile);
+            }
+        }
+        else
+            SendForm.append(Key, FileData);
         return SendForm;
+    }
+
+    ConvertUrlParam(Param) {
+        let GetParams = [];
+        if (typeof Param === 'string')
+            return Param;
+        else if (Array.isArray(Param)) {
+            for (let Item in Param)
+                GetParams.push(Item);
+        }
+        else {
+            let AllKey = Object.keys(Param);
+            for (let Idx in AllKey) {
+                let Key = AllKey[Idx];
+                let GetParam = Param[Key];
+                GetParams.push(`${Key}=${GetParam}`);
+            }
+        }
+
+        let UrlParam = GetParams.join('&');
+        return UrlParam;
+    }
+
+    ConvertRepeatId(ObjectId) {
+        let RepeatId = `'Repeat_${ObjectId}_' + Idx`;
+        return RepeatId;
+    }
+
+    ConvertRepeatResult(RepeatKey, ResultKey) {
+        let RepeatResult = `Result.${RepeatKey}[Idx]['${ResultKey}']`;
+        return RepeatResult;
+    }
+
+    IsNumber(NumberValue) {
+        let RetTrue = !isNaN(NumberValue);
+        return RetTrue;
+    }
+
+    IsBool(BoolValue) {
+        if (typeof BoolValue === 'string') {
+            if (BoolValue.toLowerCase() == 'true' || BoolValue.toLowerCase() == 'false')
+                return true;
+        }
+        return false;
     }
 
     IsDomSource(Key) {
