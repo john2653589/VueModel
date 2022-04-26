@@ -1,5 +1,5 @@
 ﻿/**
- *  VueModel.js v1.8.0
+ *  VueModel.js v1.8.1
  *  From Rugal Tu
  *  Based on Vue.js v2.6.12、jQuery Library v3.5.1
  * */
@@ -39,7 +39,7 @@ class VueModel {
         this.ErrorAlert = undefined;
 
         this.IsMountedShow = IsMountedShow;
-        this.IsDevelopment = true;
+        this.IsDevelopment = false;
 
         this.OnCheckFalse = function (FalseColumn) { };
         this.InitOption(_VueOptions);
@@ -135,6 +135,8 @@ class VueModel {
     // #region Development
 
     AddV_DevelopmentView(DevelopmentDivId = undefined) {
+
+        this.IsDevelopment = true;
 
         if (DevelopmentDivId == undefined) {
             DevelopmentDivId = '__VueModelResult__';
@@ -408,6 +410,22 @@ class VueModel {
         Key ??= `Result.${ReplaceId}`;
         ObjectId = this.ToJQueryName(ObjectId);
         $(ObjectId).attr(`v-bind:${BindName}`, Key);
+        return this;
+    }
+
+    AddV_BindUrl(ObjectId, BindName, Url, UrlParam = undefined, IsConvertUrl = true) {
+
+        if (UrlParam != undefined)
+            UrlParam = this.ConvertUrlParam(UrlParam);
+
+        if (IsConvertUrl)
+            Url = this.ConvertToUrl(Url);
+
+        let FullUrl = `${Url}`;
+        if (UrlParam != undefined)
+            FullUrl += `?${UrlParam}`;
+
+        this.AddV_Bind(ObjectId, BindName, `'${FullUrl}'`);
         return this;
     }
 
@@ -1367,6 +1385,7 @@ class VueModel {
         let SuccessBackPage = this.SuccessBackPage;
         let SendData, OnSuccess, OnError, OnComplate, SendUrl;
         let ErrorAlert;
+        let RootResult = this.VueResult;
 
         let Caller = this;
 
@@ -1418,13 +1437,17 @@ class VueModel {
                     OnSuccess?.call(Caller, Result);
                     SuccessBackPage?.call(Caller);
                 }
-                else
+                else {
+                    RootResult.ErrorResult = Result;
                     ErrorAlert?.call(Caller, Result);
+                }
             },
             error: function (Error) {
                 OnError?.call(Caller, Error);
-                if (IsDevelopment)
+                if (IsDevelopment) {
+                    RootResult.ErrorResult = Error;
                     console.log(Error);
+                }
                 alert('Request 錯誤');
             },
             complete: function () {
@@ -1441,6 +1464,7 @@ class VueModel {
         let SendData, OnSuccess, OnError, OnComplate, SendUrl;
         let Caller = this;
         let Param = this.SubmitUrl[Key];
+        let ReplaceKey = this.ToReplaceObjectId(Key);
 
         OnSuccess = _OnSuccess ?? Param.OnSuccess;
         OnError = _OnError ?? Param.OnError;
@@ -1448,7 +1472,7 @@ class VueModel {
 
         Key ??= this.ElementName;
 
-        SendData = this.FileResult[Key];
+        SendData = this.FileResult[ReplaceKey];
         SendUrl = Param.Url;
         SendUrl = this.ConvertToUrl(SendUrl);
 
@@ -1681,6 +1705,12 @@ class VueModel {
         window.location.href = Url;
     }
 
+    ToUrlWithParam(Url, Param) {
+        let GetParam = this.ConvertUrlParam(Param);
+        let GetUrl = `${Url}?${GetParam}`;
+        window.location.href = GetUrl;
+    }
+
     /**
      * *預設內部 Function
      * 從 AjaxUrl 字典中取得 Url，並依照 MethodType : 'GET'/'POST' 判斷是否將 SendData 帶入至網址
@@ -1778,6 +1808,9 @@ class VueModel {
     }
 
     ConvertToUrl(SendUrl) {
+        if (SendUrl.includes('http'))
+            return SendUrl;
+
         if (this.Domain != undefined) {
             if (this.Domain[this.Domain.length - 1] != '/')
                 this.Domain += '/';
@@ -1998,12 +2031,26 @@ class VueModel {
         return this.IsBool(ConvertValue) || this.IsNumber(ConvertValue);
     }
 
-
     IsDomSource(Key) {
         let AllKey = Object.keys(this.DomSource);
         let ReplaceKey = this.ToReplaceObjectId(Key);
         return AllKey.indexOf(ReplaceKey) >= 0;
     }
+
+    IsHasFile() {
+        let AllKey = Object.keys(this.FileResult);
+        let HasFile = false;
+        if (AllKey.length > 0) {
+            for (let Idx in AllKey) {
+                let Key = AllKey[Idx];
+                let GetFile = this.FileResult[Key];
+                if (GetFile != undefined && GetFile != null)
+                    HasFile = true;
+            }
+        }
+        return HasFile;
+    }
+
     // #endregion
 }
 
