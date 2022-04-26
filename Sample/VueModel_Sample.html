@@ -110,6 +110,56 @@
                     <label><span id="TxtName"></span> <input id="InputName" /></label>
                 </div>
             </div>
+
+            <hr />
+
+            <!-- Mult Input Auto Bind -->
+            <div>
+                <label>Auto Bind</label><br />
+                <label>Test1 <input id="__inp.Test1__" /></label><br />
+                <label>Test2 <input id="__inp.Test2__" /></label><br />
+                <label>Test3 <input id="__inp.Test3__" /></label><br />
+                <label>Test4 <input id="__inp.Test4__" /></label><br />
+                <label>Test5 <input id="__inp.Test5__" /></label><br />
+                <label>Test6 <input id="__inp.Test6__" /></label><br />
+                <label>Test7 <input id="__inp.Test7__" /></label><br />
+            </div>
+
+            <hr />
+
+            <!-- Mult Label Auto Bind -->
+            <div>
+                <label>Auto Bind</label><br />
+                <label id="__txt.Test1__"></label><br />
+                <label id="__txt.Test2__"></label><br />
+                <label id="__txt.Test3__"></label><br />
+                <label id="__txt.Test4__"></label><br />
+                <label id="__txt.Test5__"></label><br />
+                <label id="__txt.Test6__"></label><br />
+                <label id="__txt.Test7__"></label><br />
+            </div>
+
+            <!-- Mult Select Auto Bind -->
+            <div>
+                <label>Auto Bind</label><br />
+                <select id="sel.AutoBindSelect">
+                    <option value="0">=== Select ===</option>
+                    <option value="1">Bind Value 1</option>
+                    <option value="2">Bind Value 2</option>
+                    <option value="3">Bind Value 3</option>
+                    <option value="4">Bind Value 4</option>
+                </select>
+                <br />
+                <label>Auto Bind2</label><br />
+                <select id="sel.AutoBindSelect2">
+                    <option value="0">=== Select ===</option>
+                    <option value="1">Bind Value 1</option>
+                    <option value="2">Bind Value 2</option>
+                    <option value="3">Bind Value 3</option>
+                    <option value="4">Bind Value 4</option>
+                </select>
+            </div>
+
         </div>
 
         <!-- Result -->
@@ -124,6 +174,14 @@
 <script>
 
     // Set Default Value
+
+    let PageData = {
+        Test: {
+            Test1: 1,
+            Test2: 2,
+        }
+    };
+
     let Result = {
         CountyId: '',
         BindSelect: '',
@@ -133,7 +191,7 @@
     let RadioUrl = 'http://59.125.25.233:81/api/VueModel/Radio';
     let DetailUrl = 'http://59.125.25.233:81/api/VueModel/GetDataFromId';
 
-    var Model = new VueModel(DetailUrl, {}, {}, 'PageContent')
+    var Model = new VueModel(DetailUrl, PageData, {}, 'PageContent')
         // Input
         .AddV_Input('InputTest')
         // Label or Some Display Text
@@ -157,7 +215,7 @@
             CbBind2,
         })
         // Radio From Call Api
-        .AddV_Radio('RadioApi', RadioUrl)
+        .AddV_RadioFrom('RadioApi', 'PageData.Test')
         // Radio Other Option
         .AddV_Radio_Other('RadioApi')
         // Radio From Html
@@ -184,7 +242,10 @@
         })
         .AddV_Text('TxtNo', `'TxtNo' + (Idx + 1)`)
         .AddV_Text('TxtName', `'TxtName' + (Idx + 1)`)
-
+        .AddAutoBind_Input()
+        .AddAutoBind_Text()
+        .AddAutoBind_SelectBind()
+        .AddV_DevelopmentView('__VueModelResult__')
         //.Ajax({}, 'EquipEntityTypeId')
         //.Ajax({ Id: 1 })
         .VueInit()

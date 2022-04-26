@@ -1,5 +1,5 @@
 ﻿/**
- *  VueModel.js v1.7.23
+ *  VueModel.js v1.8.0
  *  From Rugal Tu
  *  Based on Vue.js v2.6.12、jQuery Library v3.5.1
  * */
@@ -27,9 +27,11 @@ class VueModel {
             DomSourceKey: {},
             DomEventFunc: {},
             TempResult: {},
+            ErrorResult: {},
         };
         this.OnSuccess = function (Result) { };
         this.SuccessBackPage = function () { };
+        this.FileSuccessBackPage = function () { };
         this.OnError = function (Error) { };
         this.OnComplete = function () { };
         this.AjaxSuccessCheck = undefined;
@@ -60,7 +62,8 @@ class VueModel {
     get DomSourceKey() { return this.VueResult.DomSourceKey; }
     get DomEventFunc() { return this.VueResult.DomEventFunc; }
     get TempResult() { return this.VueResult.TempResult; }
-
+    get ErrorResult() { return this.VueResult.ErrorResult; }
+    set ErrorResult(_ErrorResult) { this.VueResult.ErrorResult = _ErrorResult; }
     // #endregion
 
     // #region Init Native Vue
@@ -93,25 +96,6 @@ class VueModel {
                     $(ElementName).show();
             }
         };
-
-        let DevelopmentDiv = $("#__VueModelResult__")[0];
-        if (DevelopmentDiv != undefined) {
-            DevelopmentDiv.innerHTML =
-                `<label>Vue Model Storage</label>
-                <select id="__VueModelStorageKey__">
-                    <option value="Result">Result</option>
-                    <option value="VueResult">Vue Result</option>
-                    <option value="PageData">PageData</option>
-                    <option value="DomSource">Dom Source</option>
-                    <option value="TempResult">Temp Result</option>
-                    <option value="FileResult">File Result</option>
-                </select>
-                <br />
-                <textarea id="__VueModelOutput__" readonly style="width: 100%; height: 100%; margin-top: 20px;"></textarea>`;
-
-            let Timer = () => setInterval(this.DevelopmentOutput, 100, this);
-            Timer.call(this);
-        }
 
         $.extend(StaticOptions, _VueOptions);
         if ("mounted" in _VueOptions) {
@@ -148,7 +132,39 @@ class VueModel {
     }
     // #endregion
 
-    // #region
+    // #region Development
+
+    AddV_DevelopmentView(DevelopmentDivId = undefined) {
+
+        if (DevelopmentDivId == undefined) {
+            DevelopmentDivId = '__VueModelResult__';
+            let RootPage = $(this.ToJQueryName(this.ElementName));
+            let AppendDiv = `<div id="${DevelopmentDivId}"></div>`;
+            RootPage.append(AppendDiv);
+        }
+
+        let DevelopmentDiv = $(this.ToJQueryName(DevelopmentDivId))[0];
+        if (DevelopmentDiv != undefined) {
+            DevelopmentDiv.innerHTML =
+                `<label style="background-color:black;color:white;">Vue Model Storage</label>
+                <select id="__VueModelStorageKey__">
+                    <option value="Result">Result</option>
+                    <option value="VueResult">Vue Result</option>
+                    <option value="PageData">PageData</option>
+                    <option value="DomSource">Dom Source</option>
+                    <option value="TempResult">Temp Result</option>
+                    <option value="FileResult">File Result</option>
+                    <option value="ErrorResult">Error Result</option>
+                </select>
+                <br />
+                <textarea id="__VueModelOutput__" readonly style="width: 100%; height: 100%; margin-top: 20px;min-height:500px"></textarea>`;
+
+            let Timer = () => setInterval(this.DevelopmentOutput, 100, this);
+            Timer.call(this);
+        }
+
+        return this;
+    }
 
     DevelopmentOutput(ShowVueModel) {
         let Key = $("#__VueModelStorageKey__").val();
@@ -156,9 +172,7 @@ class VueModel {
         $("#__VueModelOutput__").val(JSON.stringify(OutputObj, null, 2));
     }
 
-
     // #endregion
-
 
     // #region Add Url And Reset VueResult
     /**
@@ -249,6 +263,10 @@ class VueModel {
         this.SuccessBackPage = () => this.ToUrl(Action, Controller, Domain);
         return this;
     }
+    AddSubmit_File_SuccessBackPage(Action, Controller = undefined, Domain = undefined) {
+        this.FileSuccessBackPage = () => this.ToUrl(Action, Controller, Domain);
+        return this;
+    }
     // #endregion
 
     // #region Add Function to VueResult
@@ -282,7 +300,8 @@ class VueModel {
     AddV_Model(ObjectId, Key = undefined) {
         Key ??= `Result.${ObjectId}`;
         ObjectId = this.ToJQueryName(ObjectId);
-        $(ObjectId).attr('v-model', Key.replaceAll('_', ''));
+        let ReplaceKey = this.ToReplaceObjectId(Key);
+        $(ObjectId).attr('v-model', ReplaceKey);
         return this;
     }
 
@@ -316,6 +335,7 @@ class VueModel {
         let ReplaceId = this.ToReplaceObjectId(ObjectId);
         Key ??= `Result.${ReplaceId}`;
 
+        Key = this.ToReplaceObjectId(Key);
         if (Format != undefined)
             Key = `$options.filters.${Format}(${Key})`;
         ObjectId = this.ToJQueryName(ObjectId);
@@ -406,9 +426,7 @@ class VueModel {
 
         let SetFor = `${ForKey} in ${Key}`;
 
-        console.log(SetFor);
         $(JQueryId).attr(`v-for`, SetFor);
-
         return this;
     }
 
@@ -516,6 +534,16 @@ class VueModel {
             let SelectObj = $(SelectId);
             SelectObj.append(OptionObj);
         }
+        return this;
+    }
+
+    AddV_Select_OnChange(SelectId, OnChangeEvent) {
+        if (this.DomEventFunc[SelectId] == undefined)
+            this.DomEventFunc[SelectId] = {};
+        if (OnChangeEvent != undefined)
+            this.DomEventFunc[SelectId].OnChangeEvent = OnChangeEvent;
+
+        this.AddV_On(SelectId, 'change', undefined, () => OnChangeEvent());
         return this;
     }
 
@@ -964,8 +992,55 @@ class VueModel {
         }
         return this;
     }
+    // #endregion
 
-  
+    // #region Auto Bind
+
+    AddAutoBind_Input(AutoBindKey = 'inp.', ResultKey = undefined) {
+
+        ResultKey ??= 'Result';
+        let AllInput = $(`[id*='${AutoBindKey}']`);
+
+        for (let Idx = 0; Idx < AllInput.length; Idx++) {
+            let GetInput = AllInput[Idx];
+            let Id = GetInput.id;
+
+            let GetSplitId = Id.split(`${AutoBindKey}`)[1];
+            let GetResultKey = `${ResultKey}.${GetSplitId}`;
+            this.AddV_Input(Id, GetResultKey);
+        }
+        return this;
+    }
+
+    AddAutoBind_Text(AutoBindKey = 'txt.', ResultKey = undefined) {
+        ResultKey ??= 'Result';
+        let AllText = $(`[id*='${AutoBindKey}']`);
+        for (let Idx = 0; Idx < AllText.length; Idx++) {
+            let GetText = AllText[Idx];
+            let Id = GetText.id;
+
+            let GetSplitId = Id.split(`${AutoBindKey}`)[1];
+            let GetResultKey = `${ResultKey}.${GetSplitId}`;
+
+            this.AddV_Text(Id, GetResultKey);
+        }
+        return this;
+    }
+
+    AddAutoBind_SelectBind(AutoBindKey = 'sel.', ResultKey = undefined) {
+        ResultKey ??= 'Result';
+        let AllSelect = $(`[id*='${AutoBindKey}']`);
+        for (let Idx = 0; Idx < AllSelect.length; Idx++) {
+            let GetSelect = AllSelect[Idx];
+            let Id = GetSelect.id;
+
+            let GetSplitId = Id.split(`${AutoBindKey}`)[1];
+            let GetResultKey = `${ResultKey}.${GetSplitId}`;
+
+            this.AddV_SelectBind(Id, undefined, undefined, undefined, GetResultKey);
+        }
+        return this;
+    }
     // #endregion
 
     // #region Add Event For Checkbox
@@ -1133,7 +1208,8 @@ class VueModel {
             let JObject = $(this.ToJQueryName(ObjectId));
             let IsChecked = JObject.prop('checked');
 
-            TrueValue = this.ConvertBoolOrNumber(TrueValue);
+            if (this.IsNumberOrBool(TrueValue))
+                TrueValue = this.ConvertBoolOrNumber(TrueValue);
             if (IsChecked) {
                 this.Result[Key] = TrueValue;
                 if (OnCheckedEvent != undefined)
@@ -1153,10 +1229,13 @@ class VueModel {
 
             let OnCheckedEvent = this.DomEventFunc[ObjectId]?.OnCheckedEvent;
 
-            if (TrueValue.toLowerCase() == 'true')
-                TrueValue = true;
-            else if (TrueValue.toLowerCase() == 'false')
-                TrueValue = false;
+            if (typeof TrueValue === 'string') {
+                if (TrueValue.toLowerCase() == 'true')
+                    TrueValue = true;
+                else if (TrueValue.toLowerCase() == 'false')
+                    TrueValue = false;
+            }
+
             let IsCheck = this.Result[Key] == TrueValue;
             if (IsCheck && OnCheckedEvent != undefined)
                 OnCheckedEvent(IsCheck, TrueValue);
@@ -1358,7 +1437,7 @@ class VueModel {
 
     Submit_File(Key, SendParam = undefined, _OnSuccess = undefined, _OnError = undefined, _OnComplate = undefined) {
 
-        let SuccessBackPage = this.SuccessBackPage;
+        let SuccessBackPage = this.FileSuccessBackPage;
         let SendData, OnSuccess, OnError, OnComplate, SendUrl;
         let Caller = this;
         let Param = this.SubmitUrl[Key];
@@ -1659,7 +1738,11 @@ class VueModel {
     ToJQueryName(ObjectId) {
         if (ObjectId == undefined)
             return ObjectId;
-        return ObjectId.includes('#') ? ObjectId : `#${ObjectId}`;
+
+        if (ObjectId.includes('#') || ObjectId.includes('[') || ObjectId.includes(']') || ObjectId.includes('='))
+            return ObjectId;
+
+        return `[id='${ObjectId}']`;
     }
 
     ToReplaceObjectId(ObjectId) {
@@ -1801,20 +1884,21 @@ class VueModel {
                 let AllKey = Object.keys(Source);
                 let First = Source[AllKey[0]];
                 let Two = Source[AllKey[1]];
-                if (typeof First === "string") {
-                    for (let Idx in AllKey) {
-                        let Display = AllKey[Idx];
-                        let Value = Source[Display];
+
+                if (Array.isArray(First)) {
+                    for (let Idx in First) {
+                        let Display = First[Idx];
+                        let Value = Two[Idx];
                         ReturnSource.push({
                             Display,
                             Value,
                         });
                     }
                 }
-                else if (Array.isArray(First)) {
-                    for (let Idx in First) {
-                        let Display = First[Idx];
-                        let Value = Two[Idx];
+                else {
+                    for (let Idx in AllKey) {
+                        let Display = AllKey[Idx];
+                        let Value = Source[Display];
                         ReturnSource.push({
                             Display,
                             Value,
@@ -1855,7 +1939,7 @@ class VueModel {
         let SendForm = new FormData();
 
         let AllKey = Object.keys(FileData);
-        if (AllKey.length > 1) {
+        if (AllKey.length > 0) {
             for (let Idx in AllKey) {
                 let GetKey = AllKey[Idx];
                 let GetFile = FileData[GetKey];
@@ -1910,6 +1994,10 @@ class VueModel {
         }
         return false;
     }
+    IsNumberOrBool(ConvertValue) {
+        return this.IsBool(ConvertValue) || this.IsNumber(ConvertValue);
+    }
+
 
     IsDomSource(Key) {
         let AllKey = Object.keys(this.DomSource);
