@@ -116,13 +116,13 @@
             <!-- Mult Input Auto Bind -->
             <div>
                 <label>Auto Bind</label><br />
-                <label>Test1 <input id="__inp.Test1__" /></label><br />
+                <label>Test1 <input id="_asdsa_inp.Test1__" /></label><br />
                 <label>Test2 <input id="__inp.Test2__" /></label><br />
                 <label>Test3 <input id="__inp.Test3__" /></label><br />
                 <label>Test4 <input id="__inp.Test4__" /></label><br />
-                <label>Test5 <input id="__inp.Test5__" /></label><br />
-                <label>Test6 <input id="__inp.Test6__" /></label><br />
-                <label>Test7 <input id="__inp.Test7__" /></label><br />
+                <label>Test5 <input id="__inp2.Test5__" /></label><br />
+                <label>Test6 <input id="__inp2.Test6__" /></label><br />
+                <label>Test7 <input id="__inp2.Test7__" /></label><br />
             </div>
 
             <hr />
@@ -130,7 +130,7 @@
             <!-- Mult Label Auto Bind -->
             <div>
                 <label>Auto Bind</label><br />
-                <label id="__txt.Test1__"></label><br />
+                <label id="_asd_txt.Test1__"></label><br />
                 <label id="__txt.Test2__"></label><br />
                 <label id="__txt.Test3__"></label><br />
                 <label id="__txt.Test4__"></label><br />
@@ -243,6 +243,7 @@
         .AddV_Text('TxtNo', `'TxtNo' + (Idx + 1)`)
         .AddV_Text('TxtName', `'TxtName' + (Idx + 1)`)
         .AddAutoBind_Input()
+        .AddAutoBind_Input('inp2.', 'PageData')
         .AddAutoBind_Text()
         .AddAutoBind_SelectBind()
         .AddV_DevelopmentView('__VueModelResult__')
@@ -250,4 +251,11 @@
         //.Ajax({ Id: 1 })
         .VueInit()
         ;
+
+    Model.Map('Key', (Item, Idx) => Item.sdoaijido == '')
+    console.log($("#TestMapSelect").children().map((Idx, Item) => {
+        if ($(Item).text().includes('Value 3'))
+            $(Item).hide();
+    }));
+
 </script>

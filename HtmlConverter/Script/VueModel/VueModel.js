@@ -1,5 +1,5 @@
 ﻿/**
- *  VueModel.js v1.8.5
+ *  VueModel.js v1.8.4
  *  From Rugal Tu
  *  Based on Vue.js v2.6.12、jQuery Library v3.5.1
  * */
@@ -684,7 +684,7 @@ class VueModel {
         ResultKey = ResultKey ?? ObjectIdReplace;
 
         //建立 Dom Source
-        if (!this.CreateDomSourceFrom(ObjectId, SourceKey, ResultKey))
+        if (!this.CreateDomSourceFrom(ObjectId, SourceKey))
             return this;
 
         let ChangeEventName = `OnCheckboxChange_${ObjectIdReplace}`;
@@ -1906,7 +1906,7 @@ class VueModel {
         return true;
     }
 
-    CreateDomSourceFrom(ObjectId, SourceKey, ResultKey) {
+    CreateDomSourceFrom(ObjectId, SourceKey) {
 
         let ObjectIdReplace = this.ToReplaceObjectId(ObjectId);
 
@@ -1916,7 +1916,7 @@ class VueModel {
             let Key = SourceArray[Idx];
             GetSource = GetSource[Key];
         }
-        let SetDomSource = this.ConvertDomSource(GetSource, ResultKey);
+        let SetDomSource = this.ConvertDomSource(GetSource);
         if (SetDomSource == undefined)
             return false;
 
@@ -1925,7 +1925,7 @@ class VueModel {
     }
 
     UpdateDomSource(Key, Source) {
-        let GetSource = this.ConvertDomSource(Source, Key);
+        let GetSource = this.ConvertDomSource(Source);
 
         if (GetSource == undefined)
             return false;
@@ -1935,7 +1935,7 @@ class VueModel {
         return true;
     }
 
-    ConvertDomSource(Source, ResultKey) {
+    ConvertDomSource(Source) {
 
         let ReturnSource = [];
         if (Source == undefined)
@@ -1957,15 +1957,11 @@ class VueModel {
                     for (let Idx in Source) {
                         let Item = Source[Idx];
                         let AllKey = Object.keys(Item);
-
-                        let GetKey = this.ConvertDomSourceKey(AllKey.length > 1 ? AllKey[1] : Item[DisplayKey], AllKey[0], ResultKey);
-                        let DisplayKey = GetKey.DisplayKey;
-                        let ValueKey = GetKey.ValueKey;
-                        let Display = Item[DisplayKey];
-                        let Value = Item[ValueKey];
+                        let DisplayKey = AllKey[0];
+                        let ValueKey = AllKey.length > 1 ? AllKey[1] : Item[DisplayKey];
                         ReturnSource.push({
-                            Display,
-                            Value,
+                            Display: DisplayKey,
+                            Value: ValueKey
                         });
                     }
                 }
@@ -2007,24 +2003,6 @@ class VueModel {
         }
         else return undefined;
         return ReturnSource;
-    }
-
-    ConvertDomSourceKey(ValueKey, DisplayKey, ResultKey) {
-
-        if (DisplayKey == ResultKey) {
-            let Temp = DisplayKey;
-            DisplayKey = ValueKey;
-            ValueKey = Temp;
-        }
-        else if (ValueKey == ResultKey) {
-            let Temp = ValueKey;
-            ValueKey = DisplayKey;
-            DisplayKey = Temp;
-        }
-        return {
-            DisplayKey,
-            ValueKey
-        };
     }
 
     ConvertBool(BoolValue) {

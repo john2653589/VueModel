@@ -1,0 +1,160 @@
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/css/bootstrap.min.css" integrity="sha384-zCbKRCUGaJDkqS1kPbPd7TveP5iyJE0EjAuZQTgFLD2ylzuqKfdKlfG/eSrtxUkn" crossorigin="anonymous">
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-fQybjgWLrvvRgtW6bFlB7jaZrFsaBXjsOMm/tB9LTS58ONXgqbR9W8oWht/amnpF" crossorigin="anonymous"></script>
+
+<script src="../Script/jquery/dist/jquery.min.js"></script>
+<script src="../Script/Vue/vue.js"></script>
+<script src="../Script/VueModel/VueModel.js"></script>
+
+<style>
+    label {
+        user-select: none
+    }
+</style>
+
+
+<div id="PageContent" style="padding:20px">
+
+    <div class="row p-2">
+        <div class="col-12 row justify-content-end">
+            <button class="btn btn-primary">< Convert Back</button>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col">
+            <div class="row">
+                <div class="col-auto">
+                    <label>Find Filter</label>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-auto">
+                    <label><input id="chk.Find_All" checked type="checkbox" class="align-middle" /> All</label>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col">
+                    <label><input id="chk.Find_Txt" type="checkbox" class="align-middle" /> txt.</label>
+                    <label><input id="chk.Find_Inp" type="checkbox" class="align-middle" /> inp.</label>
+                    <label><input id="chk.Find_Sel" type="checkbox" class="align-middle" /> sel.</label>
+                    <label><input id="chk.Find_BLine" type="checkbox" class="align-middle" /> __</label>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col">
+                    <label>
+                        <input id="chk.Find_Other" type="checkbox" class="align-middle" /> Other
+                        <input id="chk.Find_OtherTxt" />
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <div class="col">
+            <div class="row">
+                <div class="col-auto">
+                    <label>Output Filter</label>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col">
+                    <label>Replace</label>
+                    <label><input id="chk.Replace_Txt" type="checkbox" class="align-middle" /> txt.</label>
+                    <label><input id="chk.Replace_Inp" type="checkbox" class="align-middle" /> inp.</label>
+                    <label><input id="chk.Replace_Sel" type="checkbox" class="align-middle" /> sel.</label>
+                    <label><input id="chk.Replace_BLine" type="checkbox" class="align-middle" /> __</label>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-12">
+                    <label>Add On</label>
+                    <label><input id="chk.Add_Txt" type="checkbox" class="align-middle" /> txt.</label>
+                    <label><input id="chk.Add_Inp" type="checkbox" class="align-middle" /> inp.</label>
+                    <label><input id="chk.Add_Sel" type="checkbox" class="align-middle" /> sel.</label>
+                    <label><input id="chk.Add_BLine" type="checkbox" class="align-middle" /> __</label>
+                    <label>
+                        <span>
+                            Front
+                            <input id="inp.Add_Front"/>
+                        </span>
+                        <span>
+                            Back
+                            <input id="inp.Add_Back"/>
+                        </span>
+                        <label>
+                            <input id="chk.Add_First" type="checkbox" class="align-middle" />
+                            First
+                        </label>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+
+    </div>
+
+
+    <div class="row" style="height:100%">
+        <div class="col-6">
+            <textarea id="TxtHtml" style="width:100%; height:100%"></textarea>
+        </div>
+        <div class="col-6">
+            <div class="p-2 row" id="OutputColumn" v-for="Item in Result.FindColumns">
+                <label class="col-6">{{ Item.Id }}</label>
+                <input class="col-6 form-control" v-model="Item.Value" />
+            </div>
+        </div>
+    </div>
+    <br />
+    <br />
+</div>
+
+<script>
+
+    let Result = {
+        FindColumns: [],
+    };
+
+    // Find Auto Bind Column
+    var Model = new VueModel('', {}, {}, 'PageContent')
+        .AddV_On_Change('TxtHtml', () => {
+            let GetHtml = $('#TxtHtml').val();
+            FindIdTxt(GetHtml);
+        })
+        .AddAutoBind_CheckboxYesNo()
+        .AddAutoBind_Input()
+        .AddV_DevelopmentView()
+        .UpdateVueModel(Result)
+        .VueInit();
+
+    function FindIdTxt(GetHtml, FindTxt, ReplaceTxt) {
+
+        Model.Result.FindColumns = [];
+        let SplitId = GetHtml.split('id="');
+        for (let Idx = 0; Idx < SplitId.length; Idx++) {
+            let Item = SplitId[Idx];
+
+            let IsInclude = $("#Find_All").prop('checked');
+            for (let i = 0; i < FindTxt.length; i++) {
+                let FindItem = FindTxt[i];
+                if (Item.includes(FindItem))
+                    IsInclude = true;
+            }
+            if (!IsInclude)
+                continue;
+
+            let Id = Item.split(`"`)[0];
+            let Value = Id;
+            for (let i = 0; i < ReplaceTxt.length; i++) {
+                let ReplaceItem = ReplaceTxt[i];
+                Value = Value.replaceAll(ReplaceItem, '');
+            }
+
+            Model.Result.FindColumns.push({
+                Id,
+                Value,
+            });
+        }
+    }
+</script>
