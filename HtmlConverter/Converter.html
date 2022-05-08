@@ -7,19 +7,13 @@
 <script src="../Script/VueModel/VueModel.js"></script>
 
 <style>
-    label {
+    .UnSelect > label {
         user-select: none
     }
 </style>
 
 
-<div id="PageContent" style="padding:20px">
-
-    <div class="row p-2">
-        <div class="col-12 row justify-content-end">
-            <button class="btn btn-primary">< Convert Back</button>
-        </div>
-    </div>
+<div id="PageContent" style="padding-top:10px; padding-left:20px; padding-right:20px">
 
     <div class="row">
         <div class="col">
@@ -29,23 +23,24 @@
                 </div>
             </div>
             <div class="row">
-                <div class="col-auto">
-                    <label><input id="chk.Find_All" checked type="checkbox" class="align-middle" /> All</label>
+                <div class="col-auto UnSelect">
+                    <label><input id="chkall.Find_All" checked type="checkbox" class="align-middle" /> All</label>
                 </div>
             </div>
             <div class="row">
-                <div class="col">
+                <div class="col UnSelect">
                     <label><input id="chk.Find_Txt" type="checkbox" class="align-middle" /> txt.</label>
                     <label><input id="chk.Find_Inp" type="checkbox" class="align-middle" /> inp.</label>
                     <label><input id="chk.Find_Sel" type="checkbox" class="align-middle" /> sel.</label>
                     <label><input id="chk.Find_BLine" type="checkbox" class="align-middle" /> __</label>
+
                 </div>
             </div>
             <div class="row">
-                <div class="col">
+                <div class="col UnSelect">
                     <label>
                         <input id="chk.Find_Other" type="checkbox" class="align-middle" /> Other
-                        <input id="chk.Find_OtherTxt" />
+                        <input id="inp.Find_OtherTxt" />
                     </label>
                 </div>
             </div>
@@ -58,46 +53,51 @@
                 </div>
             </div>
             <div class="row">
-                <div class="col">
+                <div class="col UnSelect">
                     <label>Replace</label>
                     <label><input id="chk.Replace_Txt" type="checkbox" class="align-middle" /> txt.</label>
                     <label><input id="chk.Replace_Inp" type="checkbox" class="align-middle" /> inp.</label>
                     <label><input id="chk.Replace_Sel" type="checkbox" class="align-middle" /> sel.</label>
                     <label><input id="chk.Replace_BLine" type="checkbox" class="align-middle" /> __</label>
-                </div>
-            </div>
-            <div class="row">
-                <div class="col-12">
-                    <label>Add On</label>
-                    <label><input id="chk.Add_Txt" type="checkbox" class="align-middle" /> txt.</label>
-                    <label><input id="chk.Add_Inp" type="checkbox" class="align-middle" /> inp.</label>
-                    <label><input id="chk.Add_Sel" type="checkbox" class="align-middle" /> sel.</label>
-                    <label><input id="chk.Add_BLine" type="checkbox" class="align-middle" /> __</label>
                     <label>
-                        <span>
-                            Front
-                            <input id="inp.Add_Front"/>
-                        </span>
-                        <span>
-                            Back
-                            <input id="inp.Add_Back"/>
-                        </span>
-                        <label>
-                            <input id="chk.Add_First" type="checkbox" class="align-middle" />
-                            First
-                        </label>
+                        <input id="chk.ReplaceOther" type="checkbox" class="align-middle" /> Other
+                        <input id="inp.ReplaceOtherText" />
                     </label>
                 </div>
             </div>
+            <div class="row">
+                <div class="col-12 UnSelect">
+                    <label>Add Front</label>
+                    <label><input id="chk.AddFront_Txt" type="checkbox" class="align-middle" /> txt.</label>
+                    <label><input id="chk.AddFront_Inp" type="checkbox" class="align-middle" /> inp.</label>
+                    <label><input id="chk.AddFront_Sel" type="checkbox" class="align-middle" /> sel.</label>
+                    <label><input id="chk.AddFront_BLine" type="checkbox" class="align-middle" /> __</label>
+                    <label>
+                        <input id="chk.AddFrontOther" type="checkbox" class="align-middle" /> Other
+                        <input id="inp.AddFrontOtherTxt" />
+                    </label>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-12 UnSelect">
+                    <label>Add Back</label>
+                    <label><input id="chk.AddBack_Txt" type="checkbox" class="align-middle" /> txt.</label>
+                    <label><input id="chk.AddBack_Inp" type="checkbox" class="align-middle" /> inp.</label>
+                    <label><input id="chk.AddBack_Sel" type="checkbox" class="align-middle" /> sel.</label>
+                    <label><input id="chk.AddBack_BLine" type="checkbox" class="align-middle" /> __</label>
+                    <label>
+                        <input id="chk.AddBackOther" type="checkbox" class="align-middle" /> Other
+                        <input id="inp.AddBackOtherTxt" />
+                    </label>
+                </div>
+            </div>
+
         </div>
-
-
     </div>
 
-
-    <div class="row" style="height:100%">
+    <div class="row" style="min-height:500px">
         <div class="col-6">
-            <textarea id="TxtHtml" style="width:100%; height:100%"></textarea>
+            <textarea id="inp.TxtHtml" style="width:100%; height:100%"></textarea>
         </div>
         <div class="col-6">
             <div class="p-2 row" id="OutputColumn" v-for="Item in Result.FindColumns">
@@ -106,7 +106,14 @@
             </div>
         </div>
     </div>
+
     <br />
+    <div class="row p-2">
+        <div class="col-12 row justify-content-center">
+            <button id="BtnConvertBack" class="btn btn-primary">< Convert Back</button>
+        </div>
+    </div>
+
     <br />
 </div>
 
@@ -118,24 +125,133 @@
 
     // Find Auto Bind Column
     var Model = new VueModel('', {}, {}, 'PageContent')
-        .AddV_On_Change('TxtHtml', () => {
-            let GetHtml = $('#TxtHtml').val();
+        .AddAutoBind_CheckboxYesNo()
+        .AddAutoBind_CheckboxYesNo('chkall.')
+        .AddAutoBind_Input()
+        .AddFunction('AutoRefresh', () => {
+            let GetHtml = Model.Result.TxtHtml;
+            if (Model.Result.FindTxt || Model.Result.FindInp ||
+                Model.Result.FindSel || Model.Result.FindBLine ||
+                Model.Result.FindOther)
+                Model.Result.FindAll = false;
+
             FindIdTxt(GetHtml);
         })
-        .AddAutoBind_CheckboxYesNo()
-        .AddAutoBind_Input()
+        .AddAutoBind_On('chkall.', 'change', () => {
+            if (Model.Result.FindAll) {
+                Model.Result.FindTxt = false;
+                Model.Result.FindInp = false;
+                Model.Result.FindSel = false;
+                Model.Result.FindBLine = false;
+                Model.Result.FindOther = false;
+            }
+            Model.VueResult.AutoRefresh();
+        })
+        .AddAutoBind_On('chk.', 'change', undefined, 'AutoRefresh')
+        .AddAutoBind_On('inp.', 'change', undefined, 'AutoRefresh')
+        .AddV_Button('BtnConvertBack', () => {
+            if (confirm('Convert And Save?')) {
+                let FindColumns = Model.Result.FindColumns;
+                let TxtHtml = Model.Result.TxtHtml;
+                for (let Idx in FindColumns) {
+                    let Item = FindColumns[Idx];
+                    TxtHtml = TxtHtml.replace(Item.Id, Item.Value);
+                }
+                Model.Result.TxtHtml = TxtHtml;
+                Model.VueResult.AutoRefresh();
+            }
+        })
         .AddV_DevelopmentView()
         .UpdateVueModel(Result)
         .VueInit();
 
-    function FindIdTxt(GetHtml, FindTxt, ReplaceTxt) {
+    function FindIdTxt(GetHtml) {
+        let FindTxt = [];
+        let GetFindChk = [
+            Model.Result.FindTxt,
+            Model.Result.FindInp,
+            Model.Result.FindSel,
+            Model.Result.FindBLine,
+            Model.Result.FindOther,
+        ];
+        let GetFindKey = [
+            'txt.',
+            'inp.',
+            'sel.',
+            '__',
+            Model.Result.FindOtherTxt,
+        ];
+        for (let i = 0; i < GetFindChk.length; i++) {
+            if (GetFindChk[i])
+                FindTxt.push(GetFindKey[i]);
+        }
+
+        let ReplaceTxt = [];
+        let GetReplaceChk = [
+            Model.Result.ReplaceTxt,
+            Model.Result.ReplaceInp,
+            Model.Result.ReplaceSel,
+            Model.Result.ReplaceBLine,
+            Model.Result.ReplaceOther,
+        ];
+        let GetReplaceKey = [
+            'txt.',
+            'inp.',
+            'sel.',
+            '__',
+            Model.Result.ReplaceOtherText,
+        ];
+        for (let i = 0; i < GetReplaceChk.length; i++) {
+            if (GetReplaceChk[i])
+                ReplaceTxt.push(GetReplaceKey[i]);
+        }
+
+        let AddFrontTxt = [];
+        let GetAddFrontChk = [
+            Model.Result.AddFrontTxt,
+            Model.Result.AddFrontInp,
+            Model.Result.AddFrontSel,
+            Model.Result.AddFrontBLine,
+            Model.Result.AddFrontOther,
+        ];
+        let GetAddFrontTxt = [
+            'txt.',
+            'inp.',
+            'sel.',
+            '__',
+            Model.Result.AddFrontOtherTxt,
+        ];
+        for (let i = 0; i < GetAddFrontChk.length; i++) {
+            if (GetAddFrontChk[i])
+                AddFrontTxt.push(GetAddFrontTxt[i]);
+        }
+
+        let AddBackTxt = [];
+        let GetAddBackChk = [
+            Model.Result.AddBackTxt,
+            Model.Result.AddBackInp,
+            Model.Result.AddBackSel,
+            Model.Result.AddBackBLine,
+            Model.Result.AddBackOther,
+        ];
+        let GetAddBackTxt = [
+            'txt.',
+            'inp.',
+            'sel.',
+            '__',
+            Model.Result.AddBackOtherTxt,
+        ];
+        for (let i = 0; i < GetAddBackChk.length; i++) {
+            if (GetAddBackChk[i])
+                AddBackTxt.push(GetAddBackTxt[i]);
+        }
 
         Model.Result.FindColumns = [];
         let SplitId = GetHtml.split('id="');
-        for (let Idx = 0; Idx < SplitId.length; Idx++) {
+        for (let Idx = 1; Idx < SplitId.length; Idx++) {
             let Item = SplitId[Idx];
 
-            let IsInclude = $("#Find_All").prop('checked');
+            let IsInclude = Model.Result.FindAll;
             for (let i = 0; i < FindTxt.length; i++) {
                 let FindItem = FindTxt[i];
                 if (Item.includes(FindItem))
@@ -150,6 +266,12 @@
                 let ReplaceItem = ReplaceTxt[i];
                 Value = Value.replaceAll(ReplaceItem, '');
             }
+
+            if (AddFrontTxt.length > 0)
+                Value = `${AddFrontTxt.join('')}${Value}`;
+
+            if (AddBackTxt.length > 0)
+                Value = `${Value}${AddBackTxt.join('')}`;
 
             Model.Result.FindColumns.push({
                 Id,

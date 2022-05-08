@@ -781,23 +781,9 @@ class VueModel {
         let ObjectIdReplace = this.ToReplaceObjectId(ObjectId);
         ResultKey = ResultKey ?? ObjectIdReplace;
         ResultKey = this.ToReplaceObjectId(ResultKey);
+        this.RCS_UpdateResult(ResultKey, $(this.ToJQueryName(ObjectId)).prop('checked'), this.VueResult);
 
-        let EventName = ObjectIdReplace;
-        if (EventName.includes('.')) {
-            let EventNameSplit = EventName.split('.');
-            EventName = EventNameSplit[EventNameSplit.length - 1];
-        }
-
-        let ChangeEventName = `OnCheckboxChange_${EventName}`;
-        let CheckedEventName = `OnCheckboxChecked_${EventName}`;
-        this.AddEvent_Checkbox_YesNo(ResultKey, ChangeEventName, CheckedEventName);
-
-        //let VBindChecked = `${CheckedEventName}('${ObjectId}', '${TrueValue}', '${FalseValue}')`;
-        this.AddV_Bind(ObjectId, 'checked', ResultKey);
-
-        let VOnChange = `${ChangeEventName}('${ObjectId}', '${TrueValue}', '${FalseValue}')`;
-
-        this.AddV_On(ObjectId, 'change', VOnChange);
+        this.AddV_Model(ObjectId, ResultKey);
         return this;
     }
 
@@ -1033,63 +1019,115 @@ class VueModel {
 
     // #region Auto Bind
 
-    AddAutoBind_Input(AutoBindKey = 'inp.', ResultKey = undefined) {
-
+    AddAutoBind_Input(AutoBindKeys = ['inp.'], ResultKey = undefined) {
         ResultKey ??= 'Result';
-        let AllInput = $(`[id*='${AutoBindKey}']`);
+        if (typeof AutoBindKeys === 'string')
+            AutoBindKeys = [AutoBindKeys];
 
-        for (let Idx = 0; Idx < AllInput.length; Idx++) {
-            let GetInput = AllInput[Idx];
-            let Id = GetInput.id;
+        for (let Idx in AutoBindKeys) {
+            let AutoBindKey = AutoBindKeys[Idx];
+            let AllInput = $(`[id*='${AutoBindKey}']`);
 
-            let GetSplitId = Id.split(`${AutoBindKey}`)[1];
-            let GetResultKey = `${ResultKey}.${GetSplitId}`;
-            this.AddV_Input(Id, GetResultKey);
+            for (let Idx = 0; Idx < AllInput.length; Idx++) {
+                let GetInput = AllInput[Idx];
+                let Id = GetInput.id;
+
+                let GetSplitId = Id.split(`${AutoBindKey}`)[1];
+                let GetResultKey = `${ResultKey}.${GetSplitId}`;
+                this.AddV_Input(Id, GetResultKey);
+            }
+        }
+
+        return this;
+    }
+
+    AddAutoBind_Text(AutoBindKeys = ['txt.'], ResultKey = undefined) {
+        ResultKey ??= 'Result';
+        if (typeof AutoBindKeys === 'string')
+            AutoBindKeys = [AutoBindKeys];
+
+        for (let Idx in AutoBindKeys) {
+            let AutoBindKey = AutoBindKeys[Idx];
+            let AllText = $(`[id*='${AutoBindKey}']`);
+            for (let Idx = 0; Idx < AllText.length; Idx++) {
+                let GetText = AllText[Idx];
+                let Id = GetText.id;
+
+                let GetSplitId = Id.split(`${AutoBindKey}`)[1];
+                let GetResultKey = `${ResultKey}.${GetSplitId}`;
+
+                this.AddV_Text(Id, GetResultKey);
+            }
+        }
+
+        return this;
+    }
+
+    AddAutoBind_SelectBind(AutoBindKeys = ['sel.'], ResultKey = undefined) {
+        ResultKey ??= 'Result';
+        if (typeof AutoBindKeys === 'string')
+            AutoBindKeys = [AutoBindKeys];
+
+        for (let Idx in AutoBindKeys) {
+            let AutoBindKey = AutoBindKeys[Idx];
+            let AllSelect = $(`[id*='${AutoBindKey}']`);
+            for (let Idx = 0; Idx < AllSelect.length; Idx++) {
+                let GetSelect = AllSelect[Idx];
+                let Id = GetSelect.id;
+
+                let GetSplitId = Id.split(`${AutoBindKey}`)[1];
+                let GetResultKey = `${ResultKey}.${GetSplitId}`;
+
+                this.AddV_SelectBind(Id, undefined, undefined, undefined, GetResultKey);
+            }
+        }
+
+        return this;
+    }
+
+    AddAutoBind_CheckboxYesNo(AutoBindKeys = ['chk.'], ResultKey = undefined, TrueValue = true, FalseValue = false) {
+        ResultKey ??= 'Result';
+        if (typeof AutoBindKeys === 'string')
+            AutoBindKeys = [AutoBindKeys];
+
+        for (let Idx in AutoBindKeys) {
+            let AutoBindKey = AutoBindKeys[Idx];
+            let AllSelect = $(`[id*='${AutoBindKey}']`);
+            for (let Idx = 0; Idx < AllSelect.length; Idx++) {
+                let GetSelect = AllSelect[Idx];
+                let Id = GetSelect.id;
+
+                let GetSplitId = Id.split(`${AutoBindKey}`)[1];
+                let GetResultKey = `${ResultKey}.${GetSplitId}`;
+
+                this.AddV_CheckboxYesNo(Id, GetResultKey, TrueValue, FalseValue);
+            }
         }
         return this;
     }
 
-    AddAutoBind_Text(AutoBindKey = 'txt.', ResultKey = undefined) {
-        ResultKey ??= 'Result';
-        let AllText = $(`[id*='${AutoBindKey}']`);
-        for (let Idx = 0; Idx < AllText.length; Idx++) {
-            let GetText = AllText[Idx];
-            let Id = GetText.id;
+    AddAutoBind_On(AutoBindKeys = [], EventName, ResultFunc, FunctionKey) {
 
-            let GetSplitId = Id.split(`${AutoBindKey}`)[1];
-            let GetResultKey = `${ResultKey}.${GetSplitId}`;
+        let AllBindKey = '';
+        if (typeof AutoBindKeys === 'string')
+            AutoBindKeys = [AutoBindKeys];
 
-            this.AddV_Text(Id, GetResultKey);
+        for (let Idx in AutoBindKeys) {
+            let AutoBindKey = AutoBindKeys[Idx];
+            AllBindKey += AutoBindKey.replaceAll('.', '').replaceAll('_', '');
         }
-        return this;
-    }
+        FunctionKey ??= `AutoBindOn${EventName}For${AllBindKey}`;
+        if (ResultFunc != undefined)
+            this.AddFunction(FunctionKey, ResultFunc);
 
-    AddAutoBind_SelectBind(AutoBindKey = 'sel.', ResultKey = undefined) {
-        ResultKey ??= 'Result';
-        let AllSelect = $(`[id*='${AutoBindKey}']`);
-        for (let Idx = 0; Idx < AllSelect.length; Idx++) {
-            let GetSelect = AllSelect[Idx];
-            let Id = GetSelect.id;
-
-            let GetSplitId = Id.split(`${AutoBindKey}`)[1];
-            let GetResultKey = `${ResultKey}.${GetSplitId}`;
-
-            this.AddV_SelectBind(Id, undefined, undefined, undefined, GetResultKey);
-        }
-        return this;
-    }
-
-    AddAutoBind_CheckboxYesNo(AutoBindKey = 'chk.', ResultKey = undefined, TrueValue = true, FalseValue = false) {
-        ResultKey ??= 'Result';
-        let AllSelect = $(`[id*='${AutoBindKey}']`);
-        for (let Idx = 0; Idx < AllSelect.length; Idx++) {
-            let GetSelect = AllSelect[Idx];
-            let Id = GetSelect.id;
-
-            let GetSplitId = Id.split(`${AutoBindKey}`)[1];
-            let GetResultKey = `${ResultKey}.${GetSplitId}`;
-
-            this.AddV_CheckboxYesNo(Id, GetResultKey, TrueValue, FalseValue);
+        for (let KeyIdx in AutoBindKeys) {
+            let AutoBindKey = AutoBindKeys[KeyIdx];
+            let AllDom = $(`[id*='${AutoBindKey}']`);
+            for (let Idx = 0; Idx < AllDom.length; Idx++) {
+                let GetDom = AllDom[Idx];
+                let Id = GetDom.id;
+                this.AddV_On(Id, EventName, FunctionKey);
+            }
         }
         return this;
     }
@@ -1158,42 +1196,6 @@ class VueModel {
     AddEvent_Checkbox(Key, ChangeFuncName, CheckedFuncName) {
         this.AddEvent_Checkbox_Change(Key, ChangeFuncName);
         this.AddEvent_Checkbox_Checked(Key, CheckedFuncName);
-        return this;
-    }
-
-    AddEvent_Checkbox_Change_YesNo(Key, FuncName) {
-        FuncName = FuncName.replaceAll('(', '').replaceAll(')', '');
-        this.AddFunction(FuncName, (ObjectId, TrueValue, FalseValue) => {
-            let JObject = $(this.ToJQueryName(ObjectId));
-            let IsChecked = JObject.prop('checked');
-
-            let SetValue = IsChecked ? TrueValue : FalseValue;
-            SetValue = this.ConvertBoolOrNumber(SetValue);
-
-            this.RCS_UpdateResult(Key, SetValue, this.VueResult);
-        });
-        return this;
-    }
-
-    //AddEvent_Checkbox_Checked_YesNo(Key, FuncName) {
-    //    FuncName = FuncName.replaceAll('(', '').replaceAll(')', '');
-    //    this.AddFunction(FuncName, (ObjectId, TrueValue, FalseValue) => {
-
-    //        let GetFindResult = this.RCS_FindResult(Key, this.VueResult, true);
-    //        if (GetFindResult == undefined) {
-    //            let SetValue = this.ConvertBoolOrNumber(FalseValue);
-    //            this.RCS_UpdateResult(Key, SetValue, this.VueResult);
-    //            return SetValue;
-    //        }
-
-    //        let RetChecked = this.RCS_FindResult(Key, this.VueResult, true);
-    //        return RetChecked;
-    //    });
-    //    return this;
-    //}
-    AddEvent_Checkbox_YesNo(Key, ChangeFuncName, CheckedFuncName) {
-        this.AddEvent_Checkbox_Change_YesNo(Key, ChangeFuncName);
-        //this.AddEvent_Checkbox_Checked_YesNo(Key, CheckedFuncName);
         return this;
     }
 
@@ -1666,6 +1668,7 @@ class VueModel {
 
         if (this.IsString(Result) && this.IsJson(Result))
             Result = JSON.parse(Result);
+
         this.RCS_UpdateResult(Key, Result, this.VueResult);
         return this;
     }
@@ -2146,7 +2149,10 @@ class VueModel {
                 FindResult[FirstSplit] = {};
             this.RCS_UpdateResult(ReplaceKey, UpdateValue, FindResult[FirstSplit]);
         } else {
-            FindResult[Key] = UpdateValue;
+            if (FindResult[Key] == undefined)
+                FindResult[Key] = UpdateValue;
+            else
+                $.extend(FindResult[Key], UpdateValue);
         }
     }
 
