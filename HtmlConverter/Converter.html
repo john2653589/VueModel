@@ -29,10 +29,10 @@
             </div>
             <div class="row">
                 <div class="col UnSelect">
+                    <label><input id="chk.Find_BLine" type="checkbox" class="align-middle" /> __</label>
                     <label><input id="chk.Find_Txt" type="checkbox" class="align-middle" /> txt.</label>
                     <label><input id="chk.Find_Inp" type="checkbox" class="align-middle" /> inp.</label>
                     <label><input id="chk.Find_Sel" type="checkbox" class="align-middle" /> sel.</label>
-                    <label><input id="chk.Find_BLine" type="checkbox" class="align-middle" /> __</label>
 
                 </div>
             </div>
@@ -55,10 +55,10 @@
             <div class="row">
                 <div class="col UnSelect">
                     <label>Replace</label>
+                    <label><input id="chk.Replace_BLine" type="checkbox" class="align-middle" /> __</label>
                     <label><input id="chk.Replace_Txt" type="checkbox" class="align-middle" /> txt.</label>
                     <label><input id="chk.Replace_Inp" type="checkbox" class="align-middle" /> inp.</label>
                     <label><input id="chk.Replace_Sel" type="checkbox" class="align-middle" /> sel.</label>
-                    <label><input id="chk.Replace_BLine" type="checkbox" class="align-middle" /> __</label>
                     <label>
                         <input id="chk.ReplaceOther" type="checkbox" class="align-middle" /> Other
                         <input id="inp.ReplaceOtherText" />
@@ -68,10 +68,10 @@
             <div class="row">
                 <div class="col-12 UnSelect">
                     <label>Add Front</label>
+                    <label><input id="chk.AddFront_BLine" type="checkbox" class="align-middle" /> __</label>
                     <label><input id="chk.AddFront_Txt" type="checkbox" class="align-middle" /> txt.</label>
                     <label><input id="chk.AddFront_Inp" type="checkbox" class="align-middle" /> inp.</label>
                     <label><input id="chk.AddFront_Sel" type="checkbox" class="align-middle" /> sel.</label>
-                    <label><input id="chk.AddFront_BLine" type="checkbox" class="align-middle" /> __</label>
                     <label>
                         <input id="chk.AddFrontOther" type="checkbox" class="align-middle" /> Other
                         <input id="inp.AddFrontOtherTxt" />
@@ -81,10 +81,10 @@
             <div class="row">
                 <div class="col-12 UnSelect">
                     <label>Add Back</label>
+                    <label><input id="chk.AddBack_BLine" type="checkbox" class="align-middle" /> __</label>
                     <label><input id="chk.AddBack_Txt" type="checkbox" class="align-middle" /> txt.</label>
                     <label><input id="chk.AddBack_Inp" type="checkbox" class="align-middle" /> inp.</label>
                     <label><input id="chk.AddBack_Sel" type="checkbox" class="align-middle" /> sel.</label>
-                    <label><input id="chk.AddBack_BLine" type="checkbox" class="align-middle" /> __</label>
                     <label>
                         <input id="chk.AddBackOther" type="checkbox" class="align-middle" /> Other
                         <input id="inp.AddBackOtherTxt" />
@@ -168,17 +168,17 @@
     function FindIdTxt(GetHtml) {
         let FindTxt = [];
         let GetFindChk = [
+            Model.Result.FindBLine,
             Model.Result.FindTxt,
             Model.Result.FindInp,
             Model.Result.FindSel,
-            Model.Result.FindBLine,
             Model.Result.FindOther,
         ];
         let GetFindKey = [
+            '__',
             'txt.',
             'inp.',
             'sel.',
-            '__',
             Model.Result.FindOtherTxt,
         ];
         for (let i = 0; i < GetFindChk.length; i++) {
@@ -188,17 +188,17 @@
 
         let ReplaceTxt = [];
         let GetReplaceChk = [
+            Model.Result.ReplaceBLine,
             Model.Result.ReplaceTxt,
             Model.Result.ReplaceInp,
             Model.Result.ReplaceSel,
-            Model.Result.ReplaceBLine,
             Model.Result.ReplaceOther,
         ];
         let GetReplaceKey = [
+            '__',
             'txt.',
             'inp.',
             'sel.',
-            '__',
             Model.Result.ReplaceOtherText,
         ];
         for (let i = 0; i < GetReplaceChk.length; i++) {
@@ -208,17 +208,17 @@
 
         let AddFrontTxt = [];
         let GetAddFrontChk = [
+            Model.Result.AddFrontBLine,
             Model.Result.AddFrontTxt,
             Model.Result.AddFrontInp,
             Model.Result.AddFrontSel,
-            Model.Result.AddFrontBLine,
             Model.Result.AddFrontOther,
         ];
         let GetAddFrontTxt = [
+            '__',
             'txt.',
             'inp.',
             'sel.',
-            '__',
             Model.Result.AddFrontOtherTxt,
         ];
         for (let i = 0; i < GetAddFrontChk.length; i++) {
@@ -231,15 +231,15 @@
             Model.Result.AddBackTxt,
             Model.Result.AddBackInp,
             Model.Result.AddBackSel,
-            Model.Result.AddBackBLine,
             Model.Result.AddBackOther,
+            Model.Result.AddBackBLine,
         ];
         let GetAddBackTxt = [
             'txt.',
             'inp.',
             'sel.',
-            '__',
             Model.Result.AddBackOtherTxt,
+            '__',
         ];
         for (let i = 0; i < GetAddBackChk.length; i++) {
             if (GetAddBackChk[i])
