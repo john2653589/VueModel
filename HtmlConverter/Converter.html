@@ -437,8 +437,8 @@
         }
         let LineRate = (ScrollLineIdx / GetAllLine.length);
         let ScrollVal = LineRate * JObj.get(0).scrollHeight;
-        JObj.scrollTop(ScrollVal - 100);
-        JObj.focus();
+        //JObj.scrollTop(ScrollVal - 100);
+        //JObj.focus();
         JObj.prop('selectionStart', StartIdx);
         JObj.prop('selectionEnd', EndIdx + 1);
     }
