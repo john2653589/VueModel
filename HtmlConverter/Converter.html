@@ -13,7 +13,7 @@
 </style>
 
 
-<div id="PageContent" style="padding-top:10px; padding-left:20px; padding-right:20px">
+<div id="PageContent" class="d-flex flex-column h-100" style="padding-top:10px; padding-left:20px; padding-right:20px;">
 
     <div class="row">
         <div class="col">
@@ -24,26 +24,32 @@
             </div>
             <div class="row">
                 <div class="col-auto UnSelect">
-                    <label><input id="chkall.Find_All" checked type="checkbox" class="align-middle" /> All</label>
+                    <label><input id="chk.FindFromType" name="FindFrom" type="checkbox" class="align-middle" /> Find From Type</label>
                 </div>
             </div>
             <div class="row">
                 <div class="col UnSelect">
+                    <label><input id="chkall.Find_All" checked type="checkbox" class="align-middle" /> All</label>
                     <label><input id="chk.Find_BLine" type="checkbox" class="align-middle" /> __</label>
                     <label><input id="chk.Find_Txt" type="checkbox" class="align-middle" /> txt.</label>
                     <label><input id="chk.Find_Inp" type="checkbox" class="align-middle" /> inp.</label>
                     <label><input id="chk.Find_Sel" type="checkbox" class="align-middle" /> sel.</label>
                     <label><input id="chk.Find_Chk" type="checkbox" class="align-middle" /> chk.</label>
                     <label><input id="chk.Find_Rad" type="checkbox" class="align-middle" /> rad.</label>
-
-                </div>
-            </div>
-            <div class="row">
-                <div class="col UnSelect">
                     <label>
                         <input id="chk.Find_Other" type="checkbox" class="align-middle" /> Other
                         <input id="inp.Find_OtherTxt" />
                     </label>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col UnSelect">
+                    <label><input id="chk.FindType_Label" type="checkbox" class="align-middle" /> Label</label>
+                    <label><input id="chk.FindType_Div" type="checkbox" class="align-middle" /> Div</label>
+                    <label><input id="chk.FindType_Input" type="checkbox" class="align-middle" /> Input</label>
+                    <label><input id="chk.FindType_Select" type="checkbox" class="align-middle" /> Select</label>
+                    <label><input id="chk.FindType_Checkbox" type="checkbox" class="align-middle" /> Checkbox</label>
+                    <label><input id="chk.FindType_Radio" type="checkbox" class="align-middle" /> Radio</label>
                 </div>
             </div>
         </div>
@@ -103,39 +109,56 @@
         </div>
     </div>
 
-    <div class="row" style="min-height:500px">
-        <div class="col-6">
-            <textarea id="inp.TxtHtml" style="width:100%; height:100%"></textarea>
+    <div class="d-flex flex-row flex-grow-1">
+        <div class="col-6 d-flex flex-column flex-grow-1">
+            <textarea id="inp.TxtHtml" class="flex-fill"></textarea>
         </div>
-        <div class="col-6">
+        <div class="col-6" style="overflow: auto;">
             <div class="p-2 row" id="OutputColumn" v-for="Item in Result.FindColumns">
-                <label class="col-6">{{ Item.Id }}</label>
+                <label class="col-6">
+                    <a v-on:click="GoHtmlPosition(Item.Id)">
+                        <span style="color:blue">
+                            {{ Item.Type }} >
+                        </span>
+                        <span>
+                            {{ Item.Id }}
+                        </span>
+                    </a>
+                </label>
                 <input class="col-6 form-control" v-model="Item.Value" />
             </div>
         </div>
     </div>
 
-    <br />
     <div class="row p-2">
         <div class="col-12 row justify-content-center">
             <button id="BtnConvertBack" class="btn btn-primary">< Convert Back</button>
         </div>
     </div>
-
-    <br />
 </div>
 
-<script>
 
-    let Result = {
-        FindColumns: [],
-    };
+<script>
+    var FindTypeTxt = [
+        'label',
+        'span',
+        'div',
+        ':text',
+        'select',
+        ':checkbox',
+        ':radio',
+        'table',
+    ];
+    var Result = { FindColumns: [] };
 
     // Find Auto Bind Column
     var Model = new VueModel('', {}, {}, 'PageContent')
         .AddAutoBind_CheckboxYesNo()
         .AddAutoBind_CheckboxYesNo('chkall.')
         .AddAutoBind_Input()
+        .AddFunction('GoHtmlPosition', (Id) => {
+            GoHtmlFromId(Id);
+        })
         .AddFunction('AutoRefresh', () => {
             let GetHtml = Model.Result.TxtHtml;
             if (Model.Result.FindTxt || Model.Result.FindInp ||
@@ -169,7 +192,6 @@
                 Model.VueResult.AutoRefresh();
             }
         })
-        .AddV_DevelopmentView()
         .UpdateVueModel(Result)
         .VueInit();
 
@@ -225,7 +247,7 @@
         let AddFrontTxt = [];
         let GetAddFrontChk = [
             Model.Result.AddFrontBLine,
-            Model.Result.AddFrontTxt,   
+            Model.Result.AddFrontTxt,
             Model.Result.AddFrontInp,
             Model.Result.AddFrontSel,
             Model.Result.AddFrontChk,
@@ -270,6 +292,28 @@
                 AddBackTxt.push(GetAddBackTxt[i]);
         }
 
+        let FindType = [];
+        let GetFindTypeChk = [
+            Model.Result.FindTypeLabel,
+            Model.Result.FindTypeDiv,
+            Model.Result.FindTypeInput,
+            Model.Result.FindTypeSelect,
+            Model.Result.FindTypeCheckbox,
+            Model.Result.FindTypeRadio,
+        ];
+        let GetFindTypeTxt = [
+            'label',
+            'div',
+            'input',
+            'select',
+            'checkbox',
+            'radio',
+        ];
+        for (let i = 0; i < GetFindTypeChk.length; i++) {
+            if (GetFindTypeChk[i])
+                FindType.push(GetFindTypeTxt[i]);
+        }
+
         Model.Result.FindColumns = [];
         let SplitId = GetHtml.split('id="');
         for (let Idx = 1; Idx < SplitId.length; Idx++) {
@@ -281,10 +325,26 @@
                 if (Item.includes(FindItem))
                     IsInclude = true;
             }
+
             if (!IsInclude)
                 continue;
 
             let Id = Item.split(`"`)[0];
+
+            IsInclude = false;
+
+            let FullDom = GetFullDom(GetHtml, Id);
+            let Type = GetDomType(FullDom);
+            for (let i = 0; i < FindType.length; i++) {
+                if (FindType[i] == Type)
+                    IsInclude = true;
+            }
+
+            if (Model.Result.FindFromType) {
+                if (!IsInclude)
+                    continue;
+            }
+
             let Value = Id;
             for (let i = 0; i < ReplaceTxt.length; i++) {
                 let ReplaceItem = ReplaceTxt[i];
@@ -298,9 +358,89 @@
                 Value = `${Value}${AddBackTxt.join('')}`;
 
             Model.Result.FindColumns.push({
+                Type,
                 Id,
                 Value,
             });
         }
     }
+
+    function GetFullDom(GetHtml, Id) {
+
+        var IdPosition = GetHtml.indexOf(Id, 0);
+
+        let StartIdx = IdPosition;
+        while (true) {
+            if (GetHtml[StartIdx] == '<')
+                break;
+            StartIdx--;
+        }
+
+        let EndIdx = IdPosition;
+        while (true) {
+            if (GetHtml[EndIdx] == '>')
+                break;
+            EndIdx++;
+        }
+
+        let GetDom = GetHtml.substring(StartIdx, EndIdx + 1);
+        return GetDom;
+    }
+
+    function GetDomType(FullDom) {
+        let JObj = $(FullDom);
+        
+        let Type = [
+            'label',
+            'span',
+            'div',
+            'input',
+            'select',
+            'checkbox',
+            'radio',
+            'table',
+        ];
+        for (let i = 0; i < FindTypeTxt.length; i++) {
+            if (JObj.is(FindTypeTxt[i]))
+                return Type[i];
+        }
+        return 'none';
+    }
+
+    function GoHtmlFromId(Id) {
+        let JObj = $("[id='inp.TxtHtml']");
+
+        let GetHtml = JObj.val();
+        let GetAllLine = GetHtml.split('\n');
+        var IdPosition = GetHtml.indexOf(Id, 0);
+
+        let StartIdx = IdPosition;
+        while (true) {
+            if (GetHtml[StartIdx] == '<')
+                break;
+            StartIdx--;
+        }
+
+        let EndIdx = IdPosition;
+        while (true) {
+            if (GetHtml[EndIdx] == '>')
+                break;
+            EndIdx++;
+        }
+
+        let ScrollLineIdx = 0;
+        for (let i = 0; i < GetAllLine.length; i++) {
+            if (GetAllLine[i].includes(Id)) {
+                ScrollLineIdx = i;
+                break;
+            }
+        }
+        let LineRate = (ScrollLineIdx / GetAllLine.length);
+        let ScrollVal = LineRate * JObj.get(0).scrollHeight;
+        JObj.scrollTop(ScrollVal - 100);
+        JObj.focus();
+        JObj.prop('selectionStart', StartIdx);
+        JObj.prop('selectionEnd', EndIdx + 1);
+    }
+
 </script>

@@ -1,5 +1,5 @@
 ﻿/**
- *  VueModel.js v1.8.6
+ *  VueModel.js v1.8.7
  *  From Rugal Tu
  *  Based on Vue.js v2.6.12、jQuery Library v3.5.1
  * */
@@ -741,7 +741,7 @@ class VueModel {
             let Key = AllKey[Idx];
             let Value = ObjectKeyValue[Key];
 
-            if (Value == undefined || Value == '')
+            if (Value === undefined || Value === '')
                 Value = Key;
             else if (typeof Value === "object")
                 Value = $(Value).val();
