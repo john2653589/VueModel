@@ -1108,6 +1108,27 @@ class VueModel {
         return this;
     }
 
+    AddAutoBind_Radio(AutoBindKeys = ['rad.'], ResultKey = undefined) {
+        ResultKey ??= 'Result';
+        if (typeof AutoBindKeys === 'string')
+            AutoBindKeys = [AutoBindKeys];
+
+        for (let Idx in AutoBindKeys) {
+            let AutoBindKey = AutoBindKeys[Idx];
+            let AllRadio = $(`[id*='${AutoBindKey}']`);
+            for (let Idx = 0; Idx < AllRadio.length; Idx++) {
+                let GetRadio = AllRadio[Idx];
+                let Id = GetRadio.id;
+
+                let GetSplitId = Id.split(`${AutoBindKey}`)[1];
+                let GetResultKey = `${ResultKey}.${GetSplitId}`;
+
+                this.AddV_RadioBind(Id, undefined, GetResultKey);
+            }
+        }
+        return this;
+    }
+
     AddAutoBind_On(AutoBindKeys = [], EventName, ResultFunc, FunctionKey) {
 
         let AllBindKey = '';
