@@ -20,15 +20,11 @@
             <div class="row">
                 <div class="col-auto">
                     <label>Find Filter</label>
-                </div>
-            </div>
-            <div class="row">
-                <div class="col-auto UnSelect">
                     <label><input id="chk.FindFromType" name="FindFrom" type="checkbox" class="align-middle" /> Find From Type</label>
                 </div>
             </div>
             <div class="row">
-                <div class="col UnSelect">
+                <div class="col-auto UnSelect">
                     <label><input id="chkall.Find_All" checked type="checkbox" class="align-middle" /> All</label>
                     <label><input id="chk.Find_BLine" type="checkbox" class="align-middle" /> __</label>
                     <label><input id="chk.Find_Txt" type="checkbox" class="align-middle" /> txt.</label>
@@ -47,11 +43,21 @@
                     <label><input id="chk.FindType_Label" type="checkbox" class="align-middle" /> Label</label>
                     <label><input id="chk.FindType_Div" type="checkbox" class="align-middle" /> Div</label>
                     <label><input id="chk.FindType_Input" type="checkbox" class="align-middle" /> Input</label>
+                    <label><input id="chk.FindType_Textarea" type="checkbox" class="align-middle" /> Textarea</label>
                     <label><input id="chk.FindType_Select" type="checkbox" class="align-middle" /> Select</label>
                     <label><input id="chk.FindType_Checkbox" type="checkbox" class="align-middle" /> Checkbox</label>
                     <label><input id="chk.FindType_Radio" type="checkbox" class="align-middle" /> Radio</label>
+                    <label><input id="chk.FindType_Date" type="checkbox" class="align-middle" /> Date</label>
+                    <label><input id="chk.FindType_Number" type="checkbox" class="align-middle" /> Number</label>
+                    <label><input id="chk.FindType_Button" type="checkbox" class="align-middle" /> Button</label>
+                    <label><input id="chk.FindType_None" type="checkbox" class="align-middle" /> None</label>
                 </div>
             </div>
+            <!--<div class="row">
+                <div class="col UnSelect">
+
+                </div>
+            </div>-->
         </div>
 
         <div class="col">
@@ -139,16 +145,19 @@
 
 
 <script>
-    var FindTypeTxt = [
-        'label',
-        'span',
-        'div',
-        ':text',
-        'select',
-        ':checkbox',
-        ':radio',
-        'table',
-    ];
+    var FindTypeTxt = {
+        'label': 'label',
+        'span': 'span',
+        'div': 'div',
+        'text': ':text',
+        'number': `[type='number']`,
+        'textarea': 'textarea',
+        'select': 'select',
+        'checkbox': ':checkbox',
+        'radio': ':radio',
+        'table': 'table',
+        'button': 'button'
+    };
     var Result = { FindColumns: [] };
 
     // Find Auto Bind Column
@@ -196,129 +205,16 @@
         .VueInit();
 
     function FindIdTxt(GetHtml) {
-        let FindTxt = [];
-        let GetFindChk = [
-            Model.Result.FindBLine,
-            Model.Result.FindTxt,
-            Model.Result.FindInp,
-            Model.Result.FindSel,
-            Model.Result.FindChk,
-            Model.Result.FindRad,
-            Model.Result.FindOther,
-        ];
-        let GetFindKey = [
-            '__',
-            'txt.',
-            'inp.',
-            'sel.',
-            'chk.',
-            'rad.',
-            Model.Result.FindOtherTxt,
-        ];
-        for (let i = 0; i < GetFindChk.length; i++) {
-            if (GetFindChk[i])
-                FindTxt.push(GetFindKey[i]);
-        }
-
-        let ReplaceTxt = [];
-        let GetReplaceChk = [
-            Model.Result.ReplaceBLine,
-            Model.Result.ReplaceTxt,
-            Model.Result.ReplaceInp,
-            Model.Result.ReplaceSel,
-            Model.Result.ReplaceChk,
-            Model.Result.ReplaceRad,
-            Model.Result.ReplaceOther,
-        ];
-        let GetReplaceKey = [
-            '__',
-            'txt.',
-            'inp.',
-            'sel.',
-            'chk.',
-            'rad.',
-            Model.Result.ReplaceOtherText,
-        ];
-        for (let i = 0; i < GetReplaceChk.length; i++) {
-            if (GetReplaceChk[i])
-                ReplaceTxt.push(GetReplaceKey[i]);
-        }
-
-        let AddFrontTxt = [];
-        let GetAddFrontChk = [
-            Model.Result.AddFrontBLine,
-            Model.Result.AddFrontTxt,
-            Model.Result.AddFrontInp,
-            Model.Result.AddFrontSel,
-            Model.Result.AddFrontChk,
-            Model.Result.AddFrontRad,
-            Model.Result.AddFrontOther,
-        ];
-        let GetAddFrontTxt = [
-            '__',
-            'txt.',
-            'inp.',
-            'sel.',
-            'chk.',
-            'rad.',
-            Model.Result.AddFrontOtherTxt,
-        ];
-        for (let i = 0; i < GetAddFrontChk.length; i++) {
-            if (GetAddFrontChk[i])
-                AddFrontTxt.push(GetAddFrontTxt[i]);
-        }
-
-        let AddBackTxt = [];
-        let GetAddBackChk = [
-            Model.Result.AddBackTxt,
-            Model.Result.AddBackInp,
-            Model.Result.AddBackSel,
-            Model.Result.AddBackChk,
-            Model.Result.AddBackRad,
-            Model.Result.AddBackOther,
-            Model.Result.AddBackBLine,
-        ];
-        let GetAddBackTxt = [
-            'txt.',
-            'inp.',
-            'sel.',
-            'chk.',
-            'rad.',
-            Model.Result.AddBackOtherTxt,
-            '__',
-        ];
-        for (let i = 0; i < GetAddBackChk.length; i++) {
-            if (GetAddBackChk[i])
-                AddBackTxt.push(GetAddBackTxt[i]);
-        }
-
-        let FindType = [];
-        let GetFindTypeChk = [
-            Model.Result.FindTypeLabel,
-            Model.Result.FindTypeDiv,
-            Model.Result.FindTypeInput,
-            Model.Result.FindTypeSelect,
-            Model.Result.FindTypeCheckbox,
-            Model.Result.FindTypeRadio,
-        ];
-        let GetFindTypeTxt = [
-            'label',
-            'div',
-            'input',
-            'select',
-            'checkbox',
-            'radio',
-        ];
-        for (let i = 0; i < GetFindTypeChk.length; i++) {
-            if (GetFindTypeChk[i])
-                FindType.push(GetFindTypeTxt[i]);
-        }
+        let FindTxt = GetFindText();
+        let ReplaceTxt = GetReplaceText();
+        let AddFrontTxt = GetAddFrontText();
+        let AddBackTxt = GetAddBackText();
+        let FindType = GetFindType();
 
         Model.Result.FindColumns = [];
         let SplitId = GetHtml.split('id="');
         for (let Idx = 1; Idx < SplitId.length; Idx++) {
             let Item = SplitId[Idx];
-
             let IsInclude = Model.Result.FindAll;
             for (let i = 0; i < FindTxt.length; i++) {
                 let FindItem = FindTxt[i];
@@ -330,7 +226,6 @@
                 continue;
 
             let Id = Item.split(`"`)[0];
-
             IsInclude = false;
 
             let FullDom = GetFullDom(GetHtml, Id);
@@ -365,6 +260,135 @@
         }
     }
 
+    function GetFindText() {
+        let FindTxt = [];
+        let GetFindChk = [
+            Model.Result.FindBLine,
+            Model.Result.FindTxt,
+            Model.Result.FindInp,
+            Model.Result.FindSel,
+            Model.Result.FindChk,
+            Model.Result.FindRad,
+            Model.Result.FindOther,
+        ];
+        let GetFindKey = [
+            '__',
+            'txt.',
+            'inp.',
+            'sel.',
+            'chk.',
+            'rad.',
+            Model.Result.FindOtherTxt,
+        ];
+        for (let i = 0; i < GetFindChk.length; i++) {
+            if (GetFindChk[i])
+                FindTxt.push(GetFindKey[i]);
+        }
+        return FindTxt;
+    }
+    function GetReplaceText() {
+        let ReplaceTxt = [];
+        let GetReplaceChk = [
+            Model.Result.ReplaceBLine,
+            Model.Result.ReplaceTxt,
+            Model.Result.ReplaceInp,
+            Model.Result.ReplaceSel,
+            Model.Result.ReplaceChk,
+            Model.Result.ReplaceRad,
+            Model.Result.ReplaceOther,
+        ];
+        let GetReplaceKey = [
+            '__',
+            'txt.',
+            'inp.',
+            'sel.',
+            'chk.',
+            'rad.',
+            Model.Result.ReplaceOtherText,
+        ];
+        for (let i = 0; i < GetReplaceChk.length; i++) {
+            if (GetReplaceChk[i])
+                ReplaceTxt.push(GetReplaceKey[i]);
+        }
+        return ReplaceTxt;
+    }
+    function GetAddFrontText() {
+        let AddFrontTxt = [];
+        let GetAddFrontChk = [
+            Model.Result.AddFrontBLine,
+            Model.Result.AddFrontTxt,
+            Model.Result.AddFrontInp,
+            Model.Result.AddFrontSel,
+            Model.Result.AddFrontChk,
+            Model.Result.AddFrontRad,
+            Model.Result.AddFrontOther,
+        ];
+        let GetAddFrontTxt = [
+            '__',
+            'txt.',
+            'inp.',
+            'sel.',
+            'chk.',
+            'rad.',
+            Model.Result.AddFrontOtherTxt,
+        ];
+        for (let i = 0; i < GetAddFrontChk.length; i++) {
+            if (GetAddFrontChk[i])
+                AddFrontTxt.push(GetAddFrontTxt[i]);
+        }
+        return AddFrontTxt;
+    }
+    function GetAddBackText() {
+        let AddBackTxt = [];
+        let GetAddBackChk = [
+            Model.Result.AddBackTxt,
+            Model.Result.AddBackInp,
+            Model.Result.AddBackSel,
+            Model.Result.AddBackChk,
+            Model.Result.AddBackRad,
+            Model.Result.AddBackOther,
+            Model.Result.AddBackBLine,
+        ];
+        let GetAddBackTxt = [
+            'txt.',
+            'inp.',
+            'sel.',
+            'chk.',
+            'rad.',
+            Model.Result.AddBackOtherTxt,
+            '__',
+        ];
+        for (let i = 0; i < GetAddBackChk.length; i++) {
+            if (GetAddBackChk[i])
+                AddBackTxt.push(GetAddBackTxt[i]);
+        }
+        return AddBackTxt;
+    }
+    function GetFindType() {
+        let FindType = [];
+        let GetFindType = {
+            'label': Model.Result.FindTypeLabel,
+            'div': Model.Result.FindTypeDiv,
+            'input': Model.Result.FindTypeInput,
+            'textarea': Model.Result.FindTypeTextarea,
+            'select': Model.Result.FindTypeSelect,
+            'checkbox': Model.Result.FindTypeCheckbox,
+            'radio': Model.Result.FindTypeRadio,
+            'date': Model.Result.FindTypeDate,
+            'number': Model.Result.FindTypeNumber,
+            'button': Model.Result.FindTypeButton,
+            'none': Model.Result.FindTypeNone,
+        }
+        let AllKey = Object.keys(GetFindType);
+        for (let Idx in AllKey) {
+            let Key = AllKey[Idx];
+            let Val = GetFindType[Key];
+            if (Val)
+                FindType.push(Key);
+        }
+        return FindType;
+    }
+
     function GetFullDom(GetHtml, Id) {
 
         var IdPosition = GetHtml.indexOf(Id, 0);
@@ -386,32 +410,22 @@
         let GetDom = GetHtml.substring(StartIdx, EndIdx + 1);
         return GetDom;
     }
-
     function GetDomType(FullDom) {
         let JObj = $(FullDom);
-        
-        let Type = [
-            'label',
-            'span',
-            'div',
-            'input',
-            'select',
-            'checkbox',
-            'radio',
-            'table',
-        ];
-        for (let i = 0; i < FindTypeTxt.length; i++) {
-            if (JObj.is(FindTypeTxt[i]))
-                return Type[i];
+        let AllKey = Object.keys(FindTypeTxt);
+        for (let Idx in AllKey) {
+            let Key = AllKey[Idx];
+            let Val = FindTypeTxt[Key];
+            if (JObj.is(Val))
+                return Key;
         }
         return 'none';
     }
-
     function GoHtmlFromId(Id) {
         let JObj = $("[id='inp.TxtHtml']");
 
         let GetHtml = JObj.val();
-        let GetAllLine = GetHtml.split('\n');
+        //let GetAllLine = GetHtml.split('\n');
         var IdPosition = GetHtml.indexOf(Id, 0);
 
         let StartIdx = IdPosition;
@@ -428,17 +442,17 @@
             EndIdx++;
         }
 
-        let ScrollLineIdx = 0;
-        for (let i = 0; i < GetAllLine.length; i++) {
-            if (GetAllLine[i].includes(Id)) {
-                ScrollLineIdx = i;
-                break;
-            }
-        }
-        let LineRate = (ScrollLineIdx / GetAllLine.length);
-        let ScrollVal = LineRate * JObj.get(0).scrollHeight;
+        //let ScrollLineIdx = 0;
+        //for (let i = 0; i < GetAllLine.length; i++) {
+        //    if (GetAllLine[i].includes(Id)) {
+        //        ScrollLineIdx = i;
+        //        break;
+        //    }
+        //}
+        //let LineRate = (ScrollLineIdx / GetAllLine.length);
+        //let ScrollVal = LineRate * JObj.get(0).scrollHeight;
         //JObj.scrollTop(ScrollVal - 100);
-        //JObj.focus();
+        JObj.focus();
         JObj.prop('selectionStart', StartIdx);
         JObj.prop('selectionEnd', EndIdx + 1);
     }
