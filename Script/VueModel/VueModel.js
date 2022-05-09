@@ -386,7 +386,8 @@ class VueModel {
      */
     AddV_On(ObjectId, EventName, Key = undefined, Result = undefined) {
 
-        Key ??= `On${ObjectId}${EventName}`;
+        let ReplaceObjectId = ObjectId.replaceAll('.', '');
+        Key ??= `On${ReplaceObjectId}${EventName}`;
 
         if (Key.substr(Key.length - 2, 2) == '()')
             Key = Key.substr(0, Key.length - 2);
@@ -402,7 +403,8 @@ class VueModel {
 
     AddV_On_Base(ObjectId, EventName, Key = undefined, Result = undefined) {
 
-        Key ??= `On${ObjectId}${EventName}`;
+        let ReplaceObjectId = ObjectId.replaceAll('.', '');
+        Key ??= `On${ReplaceObjectId}${EventName}`;
         ObjectId = this.ToJQueryName(ObjectId);
         $(ObjectId).attr(`v-on:${EventName}`, Key);
         if (Result != undefined)
@@ -1631,7 +1633,7 @@ class VueModel {
             this.UpdateDomSource(Key, Result);
         else {
             Key = Key == this.ToReplaceObjectId(this.ElementName) ? undefined : Key;
-            this.UpdateVueModel(Result, Key);
+            this.UpdateVueModel(Result, Key, true);
         }
         this.OnSuccess(Result);
     }
@@ -1661,7 +1663,7 @@ class VueModel {
      * @param {any} Result 可接受 string、object、json
      * @param {any} Key 若為 undefined 則使用 ElementName 作為 Key 值
      */
-    UpdateVueModel(Result, Key = undefined) {
+    UpdateVueModel(Result, Key = undefined, IsReplace = false) {
         Key = this.CheckKey(Key);
         Key = (Key == this.ElementName) ? 'Result' : Key;
         Key = this.ToReplaceObjectId(Key);
@@ -1669,7 +1671,7 @@ class VueModel {
         if (this.IsString(Result) && this.IsJson(Result))
             Result = JSON.parse(Result);
 
-        this.RCS_UpdateResult(Key, Result, this.VueResult);
+        this.RCS_UpdateResult(Key, Result, this.VueResult, IsReplace);
         return this;
     }
 
@@ -2141,7 +2143,7 @@ class VueModel {
 
     // #region RCS Function
 
-    RCS_UpdateResult(Key, UpdateValue, FindResult) {
+    RCS_UpdateResult(Key, UpdateValue, FindResult, IsReplace) {
         if (Key.includes('.')) {
             let FirstSplit = Key.split('.')[0];
             let ReplaceKey = Key.replace(`${FirstSplit}.`, '');
@@ -2151,8 +2153,12 @@ class VueModel {
         } else {
             if (FindResult[Key] == undefined)
                 FindResult[Key] = UpdateValue;
-            else
-                $.extend(FindResult[Key], UpdateValue);
+            else {
+                if (IsReplace)
+                    FindResult[Key] = UpdateValue;
+                else
+                    $.extend(FindResult[Key], UpdateValue);
+            }
         }
     }
 
