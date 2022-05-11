@@ -48,6 +48,7 @@
                     <label><input id="chk.FindType_Checkbox" type="checkbox" class="align-middle" /> Checkbox</label>
                     <label><input id="chk.FindType_Radio" type="checkbox" class="align-middle" /> Radio</label>
                     <label><input id="chk.FindType_Date" type="checkbox" class="align-middle" /> Date</label>
+                    <label><input id="chk.FindType_Time" type="checkbox" class="align-middle" /> Time</label>
                     <label><input id="chk.FindType_Number" type="checkbox" class="align-middle" /> Number</label>
                     <label><input id="chk.FindType_Button" type="checkbox" class="align-middle" /> Button</label>
                     <label><input id="chk.FindType_None" type="checkbox" class="align-middle" /> None</label>
@@ -150,6 +151,8 @@
         'span': 'span',
         'div': 'div',
         'text': `:text`,
+        'date': `[type='date']`,
+        'time': `[type='time']`,
         'number': `[type='number']`,
         'textarea': 'textarea',
         'select': 'select',
@@ -375,6 +378,7 @@
             'checkbox': Model.Result.FindTypeCheckbox,
             'radio': Model.Result.FindTypeRadio,
             'date': Model.Result.FindTypeDate,
+            'time': Model.Result.FindTypeTime,
             'number': Model.Result.FindTypeNumber,
             'button': Model.Result.FindTypeButton,
             'none': Model.Result.FindTypeNone,

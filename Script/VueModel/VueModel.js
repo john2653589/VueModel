@@ -306,11 +306,14 @@ class VueModel {
      * @param {any} ObjectId 不得為 undefined
      * @param {any} Key 若為 undefined 則使用 Result 作為 Key 值
      */
-    AddV_Model(ObjectId, Key = undefined) {
+    AddV_Model(ObjectId, Key = undefined, IsNumber = false) {
         Key ??= `Result.${ObjectId}`;
         ObjectId = this.ToJQueryName(ObjectId);
         let ReplaceKey = this.ToReplaceObjectId(Key);
-        $(ObjectId).attr('v-model', ReplaceKey);
+
+        let JObj = $(ObjectId);
+        let VModelAttr = IsNumber ? 'v-model.number' : 'v-model';
+        JObj.attr(VModelAttr, ReplaceKey);
         return this;
     }
 
@@ -516,9 +519,6 @@ class VueModel {
             return this;
         }
 
-        //if (!SourceKey.includes('.'))
-        //    SourceKey = `${SourceKey}`;
-
         let V_ForIn = `Item`;
         DisplayKey ??= `Item`;
         ValueKey ??= `Item`;
@@ -718,14 +718,16 @@ class VueModel {
     AddV_CheckboxBind(ObjectId, CheckedValue, ResultKey = undefined) {
         let ObjectIdReplace = ObjectId.replaceAll('_', '');
         ResultKey = ResultKey ?? ObjectIdReplace;
+        ResultKey = this.ToReplaceObjectId(ResultKey);
 
         CheckedValue = CheckedValue ?? $(this.ToJQueryName(ObjectId)).attr('value');
         CheckedValue = CheckedValue ?? ObjectIdReplace;
 
         this.SetAttr(ObjectId, 'type', 'checkbox');
 
-        let ChangeEventName = `OnCheckboxChange_${ObjectIdReplace}`;
-        let CheckedEventName = `OnCheckboxChecked_${ObjectIdReplace}`;
+        let ReplaceFuncName = ObjectIdReplace.replaceAll('.', '');
+        let ChangeEventName = `OnCheckboxChange_${ReplaceFuncName}`;
+        let CheckedEventName = `OnCheckboxChecked_${ReplaceFuncName}`;
         this.AddEvent_Checkbox(ResultKey, ChangeEventName, CheckedEventName);
 
         let VBindChecked = `${CheckedEventName}('${ObjectId}', '${CheckedValue}')`;
@@ -846,14 +848,18 @@ class VueModel {
     AddV_RadioBind(ObjectId, CheckedValue, ResultKey = undefined) {
         let ObjectIdReplace = ObjectId.replaceAll('_', '');
         ResultKey = ResultKey ?? ObjectIdReplace;
+        ResultKey = this.ToReplaceObjectId(ResultKey);
+        if (!ResultKey.includes('.'))
+            ResultKey = `Result.${ResultKey}`;
 
         CheckedValue = CheckedValue ?? $(this.ToJQueryName(ObjectId)).attr('value');
         CheckedValue = CheckedValue ?? ObjectIdReplace;
 
         this.SetAttr(ObjectId, 'type', 'radio');
 
-        let ChangeEventName = `OnRadioChange_${ObjectIdReplace}`;
-        let CheckedEventName = `OnRadioChecked_${ObjectIdReplace}`;
+        let ReplaceFuncName = ObjectIdReplace.replaceAll('.', '');
+        let ChangeEventName = `OnRadioChange_${ReplaceFuncName}`;
+        let CheckedEventName = `OnRadioChecked_${ReplaceFuncName}`;
         this.AddEvent_Radio(ResultKey, ChangeEventName, CheckedEventName);
 
         let VBindChecked = `${CheckedEventName}('${ObjectId}', '${CheckedValue}')`;
@@ -1108,6 +1114,27 @@ class VueModel {
         return this;
     }
 
+    AddAutoBind_Checkbox(AutoBindKeys = ['chks.'], ResultKey = undefined) {
+        ResultKey ??= 'Result';
+        if (typeof AutoBindKeys === 'string')
+            AutoBindKeys = [AutoBindKeys];
+
+        for (let Idx in AutoBindKeys) {
+            let AutoBindKey = AutoBindKeys[Idx];
+            let AllSelect = $(`[id*='${AutoBindKey}']`);
+            for (let Idx = 0; Idx < AllSelect.length; Idx++) {
+                let GetSelect = AllSelect[Idx];
+                let Id = GetSelect.id;
+
+                let GetSplitId = Id.split(`${AutoBindKey}`)[1];
+                let GetResultKey = `${ResultKey}.${GetSplitId}`;
+
+                this.AddV_CheckboxBind(Id, undefined, GetResultKey);
+            }
+        }
+        return this;
+    }
+
     AddAutoBind_Radio(AutoBindKeys = ['rad.'], ResultKey = undefined) {
         ResultKey ??= 'Result';
         if (typeof AutoBindKeys === 'string')
@@ -1167,7 +1194,7 @@ class VueModel {
         FuncName = FuncName.replaceAll('(', '').replaceAll(')', '');
         this.AddFunction(FuncName, (ObjectId, TrueValue) => {
 
-            let ResultColumn = this.Result[Key];
+            let ResultColumn = this.RCS_FindResult(Key, this.VueResult, true);
 
             ObjectId = ObjectId ?? TrueValue;
             TrueValue = TrueValue ?? ObjectId;
@@ -1198,13 +1225,14 @@ class VueModel {
 
             ObjectId = ObjectId ?? TrueValue;
             TrueValue = TrueValue ?? ObjectId;
-            //初始化 Array
-            if (!Array.isArray(this.Result[Key]))
-                this.Result[Key] = [];
+
+            let FindResult = this.RCS_FindResult(Key, this.VueResult, true, []);
+            if (!Array.isArray(FindResult))
+                FindResult = [];
 
             if (!isNaN(TrueValue))
                 TrueValue = Number(TrueValue);
-            let IsChecked = this.Result[Key].indexOf(TrueValue) > -1;
+            let IsChecked = FindResult.indexOf(TrueValue) > -1;
 
             return IsChecked;
         });
@@ -1301,7 +1329,7 @@ class VueModel {
             if (this.IsNumberOrBool(TrueValue))
                 TrueValue = this.ConvertBoolOrNumber(TrueValue);
             if (IsChecked) {
-                this.Result[Key] = TrueValue;
+                this.RCS_UpdateResult(Key, TrueValue, this.VueResult, true);
                 if (OnCheckedEvent != undefined)
                     OnCheckedEvent(IsChecked, TrueValue);
             }
@@ -1326,7 +1354,7 @@ class VueModel {
                     TrueValue = false;
             }
 
-            let IsCheck = this.Result[Key] == TrueValue;
+            let IsCheck = this.RCS_FindResult(Key, this.VueResult, false) == TrueValue;
             if (IsCheck && OnCheckedEvent != undefined)
                 OnCheckedEvent(IsCheck, TrueValue);
             return IsCheck;
@@ -2064,7 +2092,7 @@ class VueModel {
     }
     ConvertNumber(NumberValue) {
         let RetNumber = -1;
-        if (!isNaN(NumberValue))
+        if (this.IsNumber(NumberValue))
             RetNumber = Number(NumberValue);
         return RetNumber;
     }
@@ -2124,7 +2152,9 @@ class VueModel {
         return RepeatResult;
     }
 
-    IsNumber(NumberValue) {
+    IsNumber(NumberValue, IsCanEmpty = true) {
+        if (!IsCanEmpty && (NumberValue == '' || NumberValue == undefined))
+            return false;
         let RetTrue = !isNaN(NumberValue);
         return RetTrue;
     }
@@ -2170,7 +2200,7 @@ class VueModel {
             let ReplaceKey = Key.replace(`${FirstSplit}.`, '');
             if (FindResult[FirstSplit] == undefined)
                 FindResult[FirstSplit] = {};
-            this.RCS_UpdateResult(ReplaceKey, UpdateValue, FindResult[FirstSplit]);
+            this.RCS_UpdateResult(ReplaceKey, UpdateValue, FindResult[FirstSplit], IsReplace);
         } else {
             if (FindResult[Key] == undefined)
                 FindResult[Key] = UpdateValue;
@@ -2183,7 +2213,7 @@ class VueModel {
         }
     }
 
-    RCS_FindResult(Key, FindResult, IsNullCreate = true) {
+    RCS_FindResult(Key, FindResult, IsNullCreate = true, DefaultValue = undefined) {
         if (Key.includes('.')) {
             let FirstSplit = Key.split('.')[0];
             let ReplaceKey = Key.replace(`${FirstSplit}.`, '');
@@ -2193,9 +2223,12 @@ class VueModel {
                 else
                     return undefined;
             }
-            return this.RCS_FindResult(ReplaceKey, FindResult[FirstSplit], IsNullCreate);
-        } else
+            return this.RCS_FindResult(ReplaceKey, FindResult[FirstSplit], IsNullCreate, DefaultValue);
+        } else {
+            if (FindResult[Key] == undefined && DefaultValue != undefined)
+                FindResult[Key] = DefaultValue;
             return FindResult[Key];
+        }
     }
 
     RCS_CreateResult(Key, FindResult) {
