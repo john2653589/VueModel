@@ -118,21 +118,38 @@
 
     <div class="d-flex flex-row flex-grow-1">
         <div class="col-6 d-flex flex-column flex-grow-1">
-            <textarea id="inp.TxtHtml" class="flex-fill"></textarea>
+            <textarea id="inp.TxtHtml" style="height:50%"></textarea>
+            <textarea id="inp.TxtSql" style="height:50%"></textarea>
         </div>
-        <div class="col-6" style="overflow: auto;">
-            <div class="p-2 row" id="OutputColumn" v-for="Item in Result.FindColumns">
-                <label class="col-6">
-                    <a v-on:click="GoHtmlPosition(Item.Id)">
-                        <span style="color:blue">
-                            {{ Item.Type }} >
-                        </span>
-                        <span>
-                            {{ Item.Id }}
-                        </span>
-                    </a>
-                </label>
-                <input class="col-6 form-control" v-model="Item.Value" />
+        <div class="col-6 row" style="overflow: scroll; height:400px; width:100%">
+            <div class="p-2 row col-6 align-content-start">
+                <div class="col-12" v-for="Item in Result.FindColumns">
+                    <label class="col-12">
+                        <a v-on:click="GoHtmlPosition(Item.Id)">
+                            <span style="color:blue">
+                                {{ Item.Type }} >
+                            </span>
+                        </a>
+                        <input class="form-control" v-model="Item.Value" />
+                        <span v-if="Item.IsMapping" class="text-success">{{ Item.ColumnName }}</span>
+                        <span v-else="Item.IsMapping">{{ Item.ColumnName }}</span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="p-2 row col-6 align-content-start">
+                <div class="col-12" v-for="Item in Result.FindSqlColumn">
+                    <label class="col-12">
+                        <a>
+                            <span style="color:blue">
+                                <<
+                            </span>
+                        </a>
+                        <input class="form-control" v-model="Item.Value" />
+                        <span v-if="Item.IsMapping" class="text-success">{{ Item.Value }}</span>
+                        <span v-else="Item.IsMapping">{{ Item.Value }}</span>
+                    </label>
+                </div>
             </div>
         </div>
     </div>
@@ -177,8 +194,16 @@
                 Model.Result.FindSel || Model.Result.FindBLine ||
                 Model.Result.FindOther)
                 Model.Result.FindAll = false;
+            if (GetHtml != undefined)
+                FindIdTxt(GetHtml);
 
-            FindIdTxt(GetHtml);
+            let GetSql = Model.Result.TxtSql;
+            if (GetSql != undefined)
+                FindSqlTxt(GetSql);
+
+            CompareFindColumn();
+
+            Model.VueRefresh();
         })
         .AddAutoBind_On('chkall.', 'change', () => {
             if (Model.Result.FindAll) {
@@ -208,7 +233,6 @@
         .VueInit();
 
     function FindIdTxt(GetHtml) {
-        debugger;
         let FindTxt = GetFindText();
         let ReplaceTxt = GetReplaceText();
         let AddFrontTxt = GetAddFrontText();
@@ -249,6 +273,10 @@
                 let ReplaceItem = ReplaceTxt[i];
                 Value = Value.replaceAll(ReplaceItem, '');
             }
+            let ColumnName = Value;
+            if (ColumnName.includes('.'))
+                ColumnName = ColumnName.split('.')[1];
+            ColumnName = ColumnName.replaceAll('_', '');
 
             if (AddFrontTxt.length > 0)
                 Value = `${AddFrontTxt.join('')}${Value}`;
@@ -260,8 +288,81 @@
                 Type,
                 Id,
                 Value,
+                ColumnName,
+                IsMapping: false,
+            });
+            let GetFindCol = Model.Result.FindColumns.sort((a, b) => {
+                return a.ColumnName < b.ColumnName ? -1 : a.ColumnName > b.ColumnName ? 1 : 0;
+            });
+            Model.Result.FindColumns = GetFindCol;
+        }
+    }
+    function FindSqlTxt(GetSql) {
+
+        let LowerSql = GetSql.toLowerCase();
+        if (LowerSql.includes('from'))
+            GetSql = GetSql.substr(0, LowerSql.indexOf('from'));
+
+        Model.Result.FindSqlColumn = [];
+        if (GetSql.length <= 0)
+            return;
+
+        let SplitSql = GetSql.split(',');
+        for (let Idx in SplitSql) {
+            let GetCol = SplitSql[Idx];
+            GetCol = GetCol.trimStart(' ').trimEnd(' ')
+            if (GetCol.includes(' ')) {
+                let GetSpace = GetCol.split(' ');
+                GetCol = GetSpace[GetSpace.length - 1];
+            }
+            GetCol = GetCol.replaceAll('[', '').replaceAll(']', '');
+            Model.Result.FindSqlColumn.push({
+                Value: GetCol,
+                IsMapping: false,
             });
         }
+
+        let GetFindSqlCol = Model.Result.FindSqlColumn.sort((a, b) => {
+            return a.Value < b.Value ? -1 : a.Value > b.Value ? 1 : 0;
+        });
+        Model.Result.FindSqlColumn = GetFindSqlCol;
+    }
+    function CompareFindColumn() {
+        let FindCol = Model.Result.FindColumns;
+        let FindSqlCol = Model.Result.FindSqlColumn;
+
+        if (FindSqlCol == undefined || FindSqlCol.length == 0)
+            return;
+        let ReturnCol = [];
+        let ReturnSqlCol = [];
+
+        let TempSqlCol = [];
+        while (FindSqlCol.length > 0) {
+            let GetSqlItem = FindSqlCol[0];
+            let GetIdx = FindCol.findIndex((Item) => {
+                return Item.ColumnName === GetSqlItem.Value;
+            });
+
+            if (GetIdx == -1) {
+                TempSqlCol.push(GetSqlItem)
+                FindSqlCol.splice(0, 1);
+            }
+            else {
+                GetSqlItem.IsMapping = true;
+                ReturnSqlCol.push(GetSqlItem);
+                FindSqlCol.splice(0, 1);
+
+                FindCol[GetIdx].IsMapping = true;
+                ReturnCol.push(FindCol[GetIdx]);
+                FindCol.splice(GetIdx, 1);
+            }
+        }
+
+        ReturnCol = ReturnCol.concat(FindCol);
+        ReturnSqlCol = ReturnSqlCol.concat(TempSqlCol);
+
+        Model.Result.FindColumns = ReturnCol;
+        Model.Result.FindSqlColumn = ReturnSqlCol;
     }
 
     function GetFindText() {
@@ -457,6 +558,7 @@
         //let LineRate = (ScrollLineIdx / GetAllLine.length);
         //let ScrollVal = LineRate * JObj.get(0).scrollHeight;
         //JObj.scrollTop(ScrollVal - 100);
+
         JObj.focus();
         JObj.prop('selectionStart', StartIdx);
         JObj.prop('selectionEnd', EndIdx + 1);

@@ -62,7 +62,16 @@
             <!-- Checkbox Sample -->
             <div>
                 <label>Checkbox From Api : </label>
-                <div id="CheckboxApi">
+                <div>
+                    <label id="CountyCheckbox">
+                        <input id="CountyCheckboxId" type="checkbox" value="CountyId" />
+                        <span id="CountyCheckboxName" value="CountyName"></span>
+                    </label>
+                    <label>
+                        <input id="CountyCheckboxOtherId" type="checkbox" value="999" />
+                        <span>其他</span>
+                        <input id="CountyCheckboxOtherText" />
+                    </label>
                 </div>
             </div>
 
@@ -74,12 +83,28 @@
                 </div>
             </div>
 
+            <div>
+                <label>Checkbox Yes No From Bind : </label>
+                <div>
+                    <label><input id="CbYesNoBind" type="checkbox" /> YesNoBindColumn</label>
+                </div>
+            </div>
+
             <hr />
 
             <!-- Radio Sample -->
             <div>
                 <label>Radio From Api : </label>
                 <div id="RadioApi">
+                    <label id="CountyRadio">
+                        <input id="CountyRadioId" type="radio" value="CountyId" name="RadioApi" />
+                        <span id="CountyRadioName" value="CountyName"></span>
+                    </label>
+                    <label>
+                        <input id="CountyRadioOtherId" type="radio" value="999" />
+                        <span>其他</span>
+                        <input id="CountyRadioOtherText" />
+                    </label>
                 </div>
             </div>
 
@@ -108,6 +133,13 @@
                 <div id="RepeatResult">
                     <label><span id="TxtNo"></span> <input id="InputNo" /></label>
                     <label><span id="TxtName"></span> <input id="InputName" /></label>
+                    <select id="RepSelect">
+                        <option value="">=== Select ===</option>
+                        <option value="1">Bind Value 1</option>
+                        <option value="2">Bind Value 2</option>
+                        <option value="3">Bind Value 3</option>
+                        <option value="4">Bind Value 4</option>
+                    </select>
                 </div>
             </div>
 
@@ -161,14 +193,14 @@
             </div>
 
         </div>
-
         <!-- Result -->
         <div class="row justify-items-end">
-            <div class="col-7 h-75 d-inline-block" style="position:fixed;">
-                <div id="__VueModelResult__"></div>
+            <div class="col-7" style="position:fixed;">
+                <div id="__VueModelResult__" style="margin:-20px"></div>
             </div>
         </div>
     </div>
+
 </div>
 
 <script>
@@ -177,18 +209,19 @@
 
     let PageData = {
         Test: {
-            Test1: 1,
-            Test2: 2,
+            Test1: '1',
+            Test2: '2',
         }
     };
 
     let Result = {
         CountyId: '',
         BindSelect: '',
+        CountyCheckbox: [999],
     };
-    let SelectUrl = 'http://59.125.25.233:81/api/VueModel/Select';
-    let CheckboxUrl = 'http://59.125.25.233:81/api/VueModel/Checkbox';
-    let RadioUrl = 'http://59.125.25.233:81/api/VueModel/Radio';
+    let SelectUrl = 'http://59.125.25.233/Staff/api/Corps/GetCounty';
+    let CheckboxUrl = 'http://59.125.25.233/Staff/api/Corps/GetCounty';
+    let RadioUrl = 'http://59.125.25.233/Staff/api/Corps/GetCounty';
     let DetailUrl = 'http://59.125.25.233:81/api/VueModel/GetDataFromId';
 
     var Model = new VueModel(DetailUrl, PageData, {}, 'PageContent')
@@ -205,43 +238,52 @@
         .AddV_Select('CountySelect', SelectUrl, 'CountyId', 'CountyName')
         // Select From Html
         .AddV_SelectBind('BindSelect')
+        .AddV_On_Change('BindSelect', () => {
+            alert('aa');
+        })
+        .AddV_On_Change('BindSelect', () => {
+            alert('bb');
+        })
+
         // Checkbox From Call Api
-        .AddV_Checkbox('CheckboxApi', CheckboxUrl)
+        .AddV_Checkbox('CountyCheckbox', SelectUrl, 'CountyCheckboxId', 'CountyCheckboxName')
+        .AddV_Checkbox_OtherBind('CountyCheckboxOtherId', 'CountyCheckboxOtherText', 'CountyCheckbox')
+        //.AddV_Checkbox('CountyCheckbox', CheckboxUrl)
         // Checkbox Other Option
-        .AddV_Checkbox_Other('CheckboxApi')
         // Checkbox From Html
         .AddV_CheckboxBindMult('CheckboxBind', {
             CbBind1: 'CbCusBindValue',
             CbBind2,
         })
+        .AddV_CheckboxYesNo('CbYesNoBind')
         // Radio From Call Api
-        .AddV_RadioFrom('RadioApi', 'PageData.Test')
+        .AddV_Radio('CountyRadio', RadioUrl, 'CountyRadioId', 'CountyRadioName')
         // Radio Other Option
-        .AddV_Radio_Other('RadioApi')
+        .AddV_Radio_OtherBind('CountyRadioOtherId', 'CountyRadioOtherText', 'CountyRadio')
         // Radio From Html
         .AddV_RadioBindMult('RadioBind', {
             RdBind1: 'RdCusBindValue',
             RdBind2
         })
 
-        .AddV_Select('EquipEntityTypeId', 'http://59.125.25.233/Equip/api/Common/GetEntityType', 'EquipEntityTypeId', 'EquipEntityTypeName')
+        //.AddV_Select('EquipEntityTypeId', 'http://59.125.25.233/Equip/api/Common/GetEntityType', 'EquipEntityTypeId', 'EquipEntityTypeName')
         // Set Default Value
         .UpdateVueModel(Result)
-        // Call Api Use Ajax
-        //.Ajax({}, 'CountySelect')
-        //.Ajax({}, 'CheckboxApi')
-        //.Ajax({}, 'RadioApi')
         .AddV_FileSingle('TestFile')
-        .AddV_Button('BtnAddRepeat', () => Model.Result.RepeatResult.push({}))
-
         .AddV_Input('InputCol')
+        .AddV_Button('BtnAddRepeat', () => Model.Result.RepeatResult.push({}))
         .AddV_Repeat('RepeatResult')
+        .AddV_Input('InputNo', 'Result.RepeatResult[Idx].InputNo')
         .AddV_Repeat_InputMult('RepeatResult', {
-            InputNo,
-            InputName,
+            //InputNo,
+            InputName: 'RepName',
         })
-        .AddV_Text('TxtNo', `'TxtNo' + (Idx + 1)`)
+        .AddV_Repeat_TextMult('RepeatResult', {
+            TxtNo: 'InputNo',
+        })
+        //.AddV_Text('TxtNo', `'TxtNo' + (Idx + 1)`)
         .AddV_Text('TxtName', `'TxtName' + (Idx + 1)`)
+
         .AddAutoBind_Input()
         .AddAutoBind_Input('inp2.', 'PageData')
         .AddAutoBind_Text()
@@ -249,10 +291,15 @@
         .AddV_DevelopmentView('__VueModelResult__')
         //.Ajax({}, 'EquipEntityTypeId')
         //.Ajax({ Id: 1 })
-        .VueInit()
+        // Call Api Use Ajax
+        .Ajax({}, 'CountySelect')
+        .Ajax({}, 'CountyCheckbox')
+        .Ajax({}, 'CountyRadio')
+        //.Ajax({}, 'CheckboxApi')
+        //.Ajax({}, 'RadioApi')
+        //.VueInit()
         ;
 
-    Model.Map('Key', (Item, Idx) => Item.sdoaijido == '')
     console.log($("#TestMapSelect").children().map((Idx, Item) => {
         if ($(Item).text().includes('Value 3'))
             $(Item).hide();
