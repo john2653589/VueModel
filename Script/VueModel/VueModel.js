@@ -333,9 +333,6 @@ class VueModel {
         let JObj = $(ObjectId);
         let VModelAttr = IsNumber ? 'v-model.number' : 'v-model';
         JObj.attr(VModelAttr, ReplaceKey);
-        if (JObj.val() != undefined) {
-            this.RCS_UpdateResult(ReplaceKey, JObj.val(), this.VueResult, true);
-        }
 
         return this;
     }
@@ -630,6 +627,11 @@ class VueModel {
 
         let JObj = this.ToJQueryObject(InputId);
         this.AddV_Model(InputId, InputV_Model, JObj.is('[type=number]'));
+
+        let Value = JObj.val();
+        if (Value != undefined && Value != '')
+            this.RCS_UpdateResult(InputV_Model, Value, this.VueResult, true);
+
         return this;
     }
 
@@ -899,6 +901,7 @@ class VueModel {
         let ReplaceId = this.ToReplaceObjectId(InputId);
         ResultKey ??= ReplaceId;
         ResultKey = this.ConvertResultKey(ResultKey);
+        ResultKey = this.ToReplaceObjectId(ResultKey);
 
         let JObjInput = this.ToJQueryObject(InputId);
         if (JObjInput.is(':checkbox'))
@@ -1033,8 +1036,8 @@ class VueModel {
                 let Id = GetSelect.id;
 
                 let GetSplitId = Id.split(`${AutoBindKey}`)[1];
-                let GetResultKey = `${ResultKey}.${GetSplitId}`;
-
+                let ReplaceId = this.ToReplaceObjectId(GetSplitId);
+                let GetResultKey = `${ResultKey}.${ReplaceId}`;
                 this.AddV_CheckboxBind(Id, undefined, GetResultKey);
             }
         }
