@@ -333,9 +333,10 @@ class VueModel {
         let JObj = $(ObjectId);
         let VModelAttr = IsNumber ? 'v-model.number' : 'v-model';
         JObj.attr(VModelAttr, ReplaceKey);
-        let GetValue = JObj.attr('value');
-        if (GetValue != undefined && GetValue != '' && !IsNumber)
-            this.AddV_Bind(ObjectId, 'value', GetValue);
+        if (JObj.val() != undefined) {
+            this.RCS_UpdateResult(ReplaceKey, JObj.val(), this.VueResult, true);
+        }
+
         return this;
     }
 
