@@ -1,5 +1,5 @@
 ﻿/**
- *  VueModel.js v1.9.0
+ *  VueModel.js v1.9.1
  *  From Rugal Tu
  *  Based on Vue.js v2.6.12、jQuery Library v3.5.1
  * */
@@ -329,11 +329,13 @@ class VueModel {
         ResultKey ??= ObjectId;
         ResultKey = this.ConvertResultKey(ResultKey);
         let ReplaceKey = this.ToReplaceObjectId(ResultKey);
-
         ObjectId = this.ToJQueryName(ObjectId);
         let JObj = $(ObjectId);
         let VModelAttr = IsNumber ? 'v-model.number' : 'v-model';
         JObj.attr(VModelAttr, ReplaceKey);
+        let GetValue = JObj.attr('value');
+        if (GetValue != undefined && GetValue != '' && !IsNumber)
+            this.AddV_Bind(ObjectId, 'value', GetValue);
         return this;
     }
 
@@ -447,8 +449,8 @@ class VueModel {
     AddV_Bind(ObjectId, BindName, BindKey = undefined) {
         let ReplaceId = this.ToReplaceObjectId(ObjectId);
         BindKey ??= `Result.${ReplaceId}`;
-        ObjectId = this.ToJQueryName(ObjectId);
-        $(ObjectId).attr(`v-bind:${BindName}`, BindKey);
+        let JObj = this.ToJQueryObject(ObjectId);
+        JObj.attr(`v-bind:${BindName}`, BindKey);
         return this;
     }
 
@@ -565,7 +567,6 @@ class VueModel {
             let SelectObj = $(JObjectId);
             SelectObj.append(OptionObj);
         }
-        this.BaseSet_OnChange_Convert_NumberBool(SelectId, ResultKey);
         return this;
     }
 
@@ -625,7 +626,9 @@ class VueModel {
     AddV_Input(InputId, InputV_Model = undefined) {
         InputV_Model ??= InputId;
         InputV_Model = this.ConvertResultKey(InputV_Model);
-        this.AddV_Model(InputId, InputV_Model);
+
+        let JObj = this.ToJQueryObject(InputId);
+        this.AddV_Model(InputId, InputV_Model, JObj.is('[type=number]'));
         return this;
     }
 
@@ -905,11 +908,10 @@ class VueModel {
         let JObj = this.ToJQueryObject(InputId);
         CheckedValue = CheckedValue ?? JObj.attr('value');
         CheckedValue = CheckedValue ?? ReplaceId;
-        JObj.attr('value', CheckedValue);
+        if (this.IsNumberOrBool(CheckedValue))
+            this.AddV_Bind(InputId, 'value', this.ConvertBoolOrNumber(CheckedValue))
 
         this.AddV_Model(InputId, ResultKey);
-
-        this.BaseSet_OnChange_Convert_NumberBool(InputId, ResultKey);
         return this;
     }
 
@@ -923,20 +925,6 @@ class VueModel {
             ChkVal = this.ConvertBoolOrNumber(ChkVal);
 
         this.AddV_Bind(ClickInputId, 'value', ChkVal);
-        return this;
-    }
-
-    BaseSet_OnChange_Convert_NumberBool(ObjectId, ResultKey) {
-        ResultKey ??= ObjectId;
-        ResultKey = this.ConvertResultKey(ResultKey);
-        ResultKey = this.ToReplaceObjectId(ResultKey);
-        this.AddV_On_Change(ObjectId, () => {
-            let GetResult = this.RCS_GetResult(ResultKey, this.VueResult);
-            if (this.IsNumberOrBool(GetResult)) {
-                let GetValue = this.ConvertBoolOrNumber(GetResult);
-                this.RCS_UpdateResult(ResultKey, GetValue, this.VueResult, true);
-            }
-        });
         return this;
     }
 
