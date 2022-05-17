@@ -1,14 +1,16 @@
 ﻿/**
- *  VueModel.js v1.9.1
+ *  VueModel.js v1.9.2
  *  From Rugal Tu
  *  Based on Vue.js v2.6.12、jQuery Library v3.5.1
  * */
+
 
 class VueModel {
     constructor(_Url, _PageData = {}, _VueOptions = {}, _ElementName = '#PageContent', IsMountedShow = true) {
         this._Vue;
         this._VueOptions = {};
 
+        this.Token = undefined;
         this.Domain = undefined;
         this.ElementName = _ElementName = this.ToJQueryName(_ElementName, false);
         this.UrlKeyDic = {};
@@ -36,6 +38,8 @@ class VueModel {
         this.AjaxSuccessCheck = undefined;
         this.SubmitSuccessCheck = undefined;
         this.ErrorAlert = undefined;
+        this.GetToken = undefined;
+        this.GlobalVueOption = undefined;
 
         this.IsMountedShow = IsMountedShow;
         this.IsDevelopment = false;
@@ -78,13 +82,23 @@ class VueModel {
         } catch { }
 
         try {
-            if (AjaxSuccessCheck != undefined && this.AjaxSuccessCheck == undefined)
+            if (AjaxSuccessCheck != undefined)
                 this.AjaxSuccessCheck = AjaxSuccessCheck;
         } catch { }
 
         try {
-            if (SubmitSuccessCheck != undefined && this.SubmitSuccessCheck == undefined)
+            if (SubmitSuccessCheck != undefined)
                 this.SubmitSuccessCheck = SubmitSuccessCheck;
+        } catch { }
+
+        try {
+            if (GetToken != undefined)
+                this.GetToken = GetToken;
+        } catch { }
+
+        try {
+            if (GlobalVueOption != undefined)
+                this.GlobalVueOption = GlobalVueOption;
         } catch { }
 
         let ElementName = this.ElementName;
@@ -93,7 +107,7 @@ class VueModel {
             mounted() {
                 if (IsMountedShow)
                     $(ElementName).show();
-            }
+            },
         };
 
         $.extend(StaticOptions, _VueOptions);
@@ -114,6 +128,9 @@ class VueModel {
         };
         $.extend(StaticOptions, BindingOptions);
 
+        if (this.GlobalVueOption != undefined)
+            $.extend(StaticOptions, this.GlobalVueOption);
+
         $.extend(this.VueOptions, StaticOptions);
         if ("methods" in this.VueOptions) {
             if (Object.keys(this.VueOptions.methods).length > 0)
@@ -127,6 +144,8 @@ class VueModel {
     VueInit() {
         if (this.Vue == undefined)
             this.Vue = new Vue(this.VueOptions);
+
+
         return this;
     }
 
@@ -624,6 +643,7 @@ class VueModel {
     AddV_Input(InputId, InputV_Model = undefined) {
         InputV_Model ??= InputId;
         InputV_Model = this.ConvertResultKey(InputV_Model);
+        InputV_Model = this.ToReplaceObjectId(InputV_Model);
 
         let JObj = this.ToJQueryObject(InputId);
         this.AddV_Model(InputId, InputV_Model, JObj.is('[type=number]'));
@@ -1157,6 +1177,9 @@ class VueModel {
             complete: function () {
                 CompleteCallback.call(Caller);
                 OnComplate?.call(Caller);
+            },
+            header: {
+                Authorization: 'aaaa',
             },
         };
         $.ajax(this.AjaxOptions);
