@@ -1,5 +1,5 @@
 ﻿/**
- *  VueModel.js v1.9.2
+ *  VueModel.js v1.9.3
  *  From Rugal Tu
  *  Based on Vue.js v2.6.12、jQuery Library v3.5.1
  * */
@@ -770,21 +770,25 @@ class VueModel {
         return this;
     }
 
-    AddV_FileSingle(InputId, UploadUrl, ButtonId = undefined, ResultKey = undefined) {
+    AddV_File(InputId, UploadUrl, ResultKey = undefined) {
 
         let ReplaceId = InputId.replaceAll('_', '');
         ResultKey ??= `${ReplaceId}`;
 
-        this.AddSubmit(InputId, UploadUrl);
+        if (this.IsNotNullAndEmpty(UploadUrl))
+            this.AddSubmit(ResultKey, UploadUrl);
 
         let SetResult = this.FileResult;
         this.AddV_On_Base(InputId, 'change', undefined, (e) => {
-            let GetFile = e.target.files[0];
-            SetResult[ResultKey] = GetFile;
+            let Files = e.target.files;
+            if (SetResult[ResultKey] == undefined)
+                SetResult[ResultKey] = {};
+            SetResult[ResultKey][ReplaceId] = [];
+            for (let i = 0; i < Files.length; i++) {
+                let GetFile = Files[i];
+                SetResult[ResultKey][ReplaceId].push(GetFile);
+            }
         });
-
-        if (ButtonId != undefined)
-            this.AddV_Button(ButtonId, () => this.Submit_File(InputId));
 
         return this;
     }
@@ -1279,8 +1283,8 @@ class VueModel {
         let SuccessBackPage = this.FileSuccessBackPage;
         let SendData, OnSuccess, OnError, OnComplate, SendUrl;
         let Caller = this;
-        let Param = this.SubmitUrl[Key];
         let ReplaceKey = this.ToReplaceObjectId(Key);
+        let Param = this.SubmitUrl[ReplaceKey];
 
         OnSuccess = _OnSuccess ?? Param.OnSuccess;
         OnError = _OnError ?? Param.OnError;
@@ -1597,7 +1601,7 @@ class VueModel {
 
     IsNotNullAndEmpty(AssignString) {
         AssignString = AssignString.replaceAll(' ', '');
-        if (AssignString != undefined && AssignStringn != '')
+        if (AssignString != undefined && AssignString != '')
             return true;
         return false;
     }
@@ -1708,18 +1712,23 @@ class VueModel {
 
     ConvertSendFile(Key, FileData) {
         Key ??= 'File';
+        Key = this.ToReplaceObjectId(Key);
         let SendForm = new FormData();
 
-        let AllKey = Object.keys(FileData);
-        if (AllKey.length > 0) {
-            for (let Idx in AllKey) {
-                let GetKey = AllKey[Idx];
-                let GetFile = FileData[GetKey];
-                SendForm.append(GetKey, GetFile);
+        let IdKey = Object.keys(FileData);
+        let FileNo = 0;
+        for (let Idx in IdKey) {
+            let GetId = IdKey[Idx];
+            let GetFiles = FileData[GetId];
+            let IsSingleFile = IdKey.length == 1 && GetFiles.length == 1;
+            for (let FileIdx in GetFiles) {
+                let GetFile = GetFiles[FileIdx];
+                let SetKey = IsSingleFile ? Key : `${Key}_${FileNo}`;
+                SendForm.append(SetKey, GetFile);
+                FileNo++;
             }
         }
-        else
-            SendForm.append(Key, FileData);
+
         return SendForm;
     }
 
