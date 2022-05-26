@@ -38,6 +38,9 @@ class VueModel {
         this.AjaxSuccessCheck = undefined;
         this.SubmitSuccessCheck = undefined;
         this.ErrorAlert = undefined;
+        this.ErrorMute = {
+
+        };
         this.GetToken = undefined;
         this.GlobalVueOption = undefined;
 
@@ -260,6 +263,12 @@ class VueModel {
         this.SubmitSuccessCheck = CheckFunc;
         return this;
     }
+
+    AddRequestErrorEnable(Key, IsEnable = false) {
+        this.ErrorMute[Key] = IsEnable;
+        return this;
+    }
+
     AddErrorAlert_Submit(AlertFunc = (Error) => { }) {
         this.ErrorAlert = AlertFunc;
         return this;
