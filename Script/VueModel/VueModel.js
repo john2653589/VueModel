@@ -1,5 +1,5 @@
 ﻿/**
- *  VueModel.js v1.9.3
+ *  VueModel.js v1.9.4
  *  From Rugal Tu
  *  Based on Vue.js v2.6.12、jQuery Library v3.5.1
  * */
@@ -1209,7 +1209,7 @@ class VueModel {
      * @param {any} _OnError 若不為 undefined 則在 Ajax error 後額外執行
      * @param {any} _OnComplate 若不為 undefined 則在 Ajax complate 後額外執行
      */
-    Submit(Key, MethodType = undefined, SendParam = undefined, _OnSuccess = undefined, _OnError = undefined, _OnComplate = undefined) {
+    Submit(Key, MethodType = undefined, SendParam = undefined, _OnSuccess = undefined, _OnError = undefined, _OnComplate = undefined, MuteRequestErrorAlert = false) {
 
         let SuccessBackPage = this.SuccessBackPage;
         let SendData, OnSuccess, OnError, OnComplate, SendUrl;
@@ -1277,7 +1277,8 @@ class VueModel {
                     RootResult.ErrorResult = Error;
                     console.log(Error);
                 }
-                alert('Request 錯誤');
+                if (!MuteRequestErrorAlert)
+                    alert('Request 錯誤');
             },
             complete: function () {
                 OnComplate?.call(Caller);
@@ -1442,7 +1443,7 @@ class VueModel {
      * @param {any} KeyResult 接受 { Result }，同 'Result' : Result
      * 若 Key 值為 'default'，則使用 ElementName 作為 Key 值
      */
-    UpdateVueModelMult(KeyResult = {}) {
+    UpdateVueModelMult(KeyResult = {}, IsReplace = false) {
 
         let ObjectKeys = Object.keys(KeyResult);
         for (let Idx in ObjectKeys) {
@@ -1450,7 +1451,7 @@ class VueModel {
             let GetResult = KeyResult[GetKey];
             if (GetKey.toLowerCase().includes('default'))
                 GetKey = undefined;
-            this.UpdateVueModel(GetResult, GetKey);
+            this.UpdateVueModel(GetResult, GetKey, IsReplace);
         }
         return this;
     }
