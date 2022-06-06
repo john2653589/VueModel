@@ -1,5 +1,5 @@
 ﻿/**
- *  VueModel.js v1.9.5a
+ *  VueModel.js v1.9.6
  *  From Rugal Tu
  *  Based on Vue.js v2.6.12、jQuery Library v3.5.1
  * */
@@ -544,6 +544,38 @@ class VueModel {
                 $(ObjectId).attr(`${BindAttr}`, BindValue);
             }
         }
+        return this;
+    }
+
+    AddV_Show(ObjectId, ResultKey) {
+        let JQueryId = this.ToJQueryObject(ObjectId);
+        let ReplaceId = this.ToReplaceObjectId(ObjectId);
+        ResultKey ??= `Result.${ReplaceId}`;
+        JQueryId.attr(`v-show`, ResultKey);
+        return this;
+    }
+
+    AddV_If(ObjectId, ResultKey) {
+        let JQueryId = this.ToJQueryObject(ObjectId);
+        let ReplaceId = this.ToReplaceObjectId(ObjectId);
+        ResultKey ??= `Result.${ReplaceId}`;
+        JQueryId.attr(`v-if`, ResultKey);
+        return this;
+    }
+
+    AddV_Else(ObjectId, ResultKey) {
+        let JQueryId = this.ToJQueryObject(ObjectId);
+        let ReplaceId = this.ToReplaceObjectId(ObjectId);
+        ResultKey ??= `Result.${ReplaceId}`;
+        JQueryId.attr(`v-if`, ResultKey);
+        return this;
+    }
+
+    AddV_ElseIf(ObjectId, ResultKey) {
+        let JQueryId = this.ToJQueryObject(ObjectId);
+        let ReplaceId = this.ToReplaceObjectId(ObjectId);
+        ResultKey ??= `Result.${ReplaceId}`;
+        JQueryId.attr(`v-if`, ResultKey);
         return this;
     }
     // #endregion
