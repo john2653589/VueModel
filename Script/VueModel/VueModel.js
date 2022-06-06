@@ -1,5 +1,5 @@
 ﻿/**
- *  VueModel.js v1.9.4
+ *  VueModel.js v1.9.5a
  *  From Rugal Tu
  *  Based on Vue.js v2.6.12、jQuery Library v3.5.1
  * */
@@ -480,6 +480,19 @@ class VueModel {
         return this;
     }
 
+    AddV_BindMult(BindName, ObjectIdBindKey = {}, DefaultBindKey = undefined) {
+        let AllKey = Object.keys(ObjectIdBindKey);
+        for (let Idx in AllKey) {
+            let ObjectId = AllKey[Idx];
+            let BindKey = ObjectIdBindKey[ObjectId];
+            if (typeof BindKey === 'string')
+                this.AddV_Bind(ObjectId, BindName, BindKey);
+            else
+                this.AddV_Bind(ObjectId, BindName, DefaultBindKey);
+        }
+        return this;
+    }
+
     AddV_BindUrl(ObjectId, BindName, Url, UrlParam = undefined, IsConvertUrl = true) {
 
         if (UrlParam != undefined)
@@ -819,8 +832,14 @@ class VueModel {
 
             let ReplaceKey = Key.replaceAll('_', '');
             this.AddV_On_Base(InputId, 'change', undefined, (e) => {
-                let GetFile = e.target.files[0];
-                SetResult[ResultKey][ReplaceKey] = GetFile;
+                let Files = e.target.files;
+                if (SetResult[ResultKey] == undefined)
+                    SetResult[ResultKey] = {};
+                SetResult[ResultKey][ReplaceKey] = [];
+                for (let i = 0; i < Files.length; i++) {
+                    let GetFile = Files[i];
+                    SetResult[ResultKey][ReplaceKey].push(GetFile);
+                }
             });
         }
         return this;
@@ -1397,7 +1416,9 @@ class VueModel {
      */
     AjaxSuccess(Key, Result) {
         Key = Key == this.ToReplaceObjectId(this.ElementName) ? undefined : Key;
-        this.UpdateVueModel(Result, Key, true);
+        if (Result != undefined) {
+            this.UpdateVueModel(Result, Key, true);
+        }
         this.OnSuccess(Result);
     }
 
@@ -1733,7 +1754,7 @@ class VueModel {
             let IsSingleFile = IdKey.length == 1 && GetFiles.length == 1;
             for (let FileIdx in GetFiles) {
                 let GetFile = GetFiles[FileIdx];
-                let SetKey = IsSingleFile ? Key : `${Key}_${FileNo}`;
+                let SetKey = IsSingleFile ? GetId : `${GetId}_${FileNo}`;
                 SendForm.append(SetKey, GetFile);
                 FileNo++;
             }
