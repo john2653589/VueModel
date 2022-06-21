@@ -1,5 +1,5 @@
 ﻿/**
- *  VueModel.js v1.9.6
+ *  VueModel.js v1.9.6a
  *  From Rugal Tu
  *  Based on Vue.js v2.6.12、jQuery Library v3.5.1
  * */
@@ -547,35 +547,48 @@ class VueModel {
         return this;
     }
 
-    AddV_Show(ObjectId, ResultKey) {
+    AddV_Show(ObjectId, Key) {
         let JQueryId = this.ToJQueryObject(ObjectId);
         let ReplaceId = this.ToReplaceObjectId(ObjectId);
-        ResultKey ??= `Result.${ReplaceId}`;
-        JQueryId.attr(`v-show`, ResultKey);
+        Key ??= `Result.${ReplaceId}`;
+        JQueryId.attr(`v-show`, Key);
         return this;
     }
 
-    AddV_If(ObjectId, ResultKey) {
-        let JQueryId = this.ToJQueryObject(ObjectId);
-        let ReplaceId = this.ToReplaceObjectId(ObjectId);
-        ResultKey ??= `Result.${ReplaceId}`;
-        JQueryId.attr(`v-if`, ResultKey);
+    AddV_ShowMult(ObjectKey = {}) {
+        let AllKey = Object.keys(ObjectKey);
+        for (let Idx in AllKey) {
+            let Key = AllKey[Idx];
+            let Val = ObjectKey[Key];
+            if (typeof Val === 'object')
+                Val = Key;
+
+            this.AddV_Show(Key, Val);
+        }
         return this;
     }
 
-    AddV_Else(ObjectId, ResultKey) {
+    AddV_If(ObjectId, Key) {
         let JQueryId = this.ToJQueryObject(ObjectId);
         let ReplaceId = this.ToReplaceObjectId(ObjectId);
-        ResultKey ??= `Result.${ReplaceId}`;
-        JQueryId.attr(`v-if`, ResultKey);
+        Key ??= `Result.${ReplaceId}`;
+        JQueryId.attr(`v-if`, Key);
         return this;
     }
 
-    AddV_ElseIf(ObjectId, ResultKey) {
+    AddV_Else(ObjectId, Key) {
         let JQueryId = this.ToJQueryObject(ObjectId);
         let ReplaceId = this.ToReplaceObjectId(ObjectId);
-        ResultKey ??= `Result.${ReplaceId}`;
-        JQueryId.attr(`v-if`, ResultKey);
+        Key ??= `Result.${ReplaceId}`;
+        JQueryId.attr(`v-if`, Key);
+        return this;
+    }
+
+    AddV_ElseIf(ObjectId, Key) {
+        let JQueryId = this.ToJQueryObject(ObjectId);
+        let ReplaceId = this.ToReplaceObjectId(ObjectId);
+        Key ??= `Result.${ReplaceId}`;
+        JQueryId.attr(`v-if`, Key);
         return this;
     }
     // #endregion
@@ -1304,11 +1317,13 @@ class VueModel {
         let IsDevelopment = this.IsDevelopment;
         if (IsDevelopment)
             console.log(SendData);
-        let JsonModel = JSON.stringify(SendData);
+
+        if (typeof SendData === 'object' && Object.keys(SendData).length > 0 && SendType == 'POST')
+            SendData = JSON.stringify(SendData);
         let SubmitOptions = {
             type: MethodType,
             url: SendUrl,
-            data: JsonModel,
+            data: SendData,
             dataType: 'JSON',
             contentType: 'application/json;charset=utf-8',
             success: function (Result) {
@@ -1396,6 +1411,29 @@ class VueModel {
         $.ajax(SubmitOptions);
         return this;
     }
+
+    Submit_FileMult(KeyParam, _OnComplate = undefined) {
+        this.RCS_Submit_FileMult(KeyParam, 0, _OnComplate);
+        return this;
+    }
+
+    RCS_Submit_FileMult(KeyParam, SubmitIndex, _OnComplate = undefined) {
+        let AllKey = Object.keys(KeyParam);
+        if (SubmitIndex < AllKey.length) {
+            let Key = AllKey[SubmitIndex];
+            let Param = KeyParam[Key];
+            if (this.IsHasFile(Key)) {
+                this.Submit_File(Key, Param, () => {
+                    this.RCS_Submit_FileMult(KeyParam, SubmitIndex + 1, _OnComplate);
+                });
+            }
+            else
+                this.RCS_Submit_FileMult(KeyParam, SubmitIndex + 1, _OnComplate);
+        }
+        else if (_OnComplate != undefined)
+            _OnComplate();
+    }
+
 
     SubmitCustom(Key, AjaxOption = {}) {
 
@@ -1851,15 +1889,19 @@ class VueModel {
         return this.IsBool(ConvertValue) || this.IsNumber(ConvertValue);
     }
 
-    IsHasFile() {
+    IsHasFile(FindKey = undefined) {
         let AllKey = Object.keys(this.FileResult);
+        if (FindKey != undefined)
+            FindKey = this.ToReplaceObjectId(FindKey);
         let HasFile = false;
         if (AllKey.length > 0) {
             for (let Idx in AllKey) {
                 let Key = AllKey[Idx];
-                let GetFile = this.FileResult[Key];
-                if (GetFile != undefined && GetFile != null)
-                    HasFile = true;
+                if (FindKey == undefined || FindKey == Key) {
+                    let GetFile = this.FileResult[Key];
+                    if (GetFile != undefined && GetFile != null)
+                        HasFile = true;
+                }
             }
         }
         return HasFile;
