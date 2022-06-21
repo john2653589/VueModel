@@ -1,5 +1,5 @@
 ﻿/**
- *  VueModel.js v1.9.6a
+ *  VueModel.js v1.9.6b
  *  From Rugal Tu
  *  Based on Vue.js v2.6.12、jQuery Library v3.5.1
  * */
@@ -1318,7 +1318,7 @@ class VueModel {
         if (IsDevelopment)
             console.log(SendData);
 
-        if (typeof SendData === 'object' && Object.keys(SendData).length > 0 && SendType == 'POST')
+        if (typeof SendData === 'object' && Object.keys(SendData).length > 0 && MethodType == 'POST')
             SendData = JSON.stringify(SendData);
         let SubmitOptions = {
             type: MethodType,
