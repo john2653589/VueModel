@@ -1,5 +1,5 @@
 ﻿/**
- *  VueModel.js v1.9.6b
+ *  VueModel.js v1.9.7
  *  From Rugal Tu
  *  Based on Vue.js v2.6.12、jQuery Library v3.5.1
  * */
@@ -1185,6 +1185,26 @@ class VueModel {
                 this.AddV_On(Id, EventName, FunctionKey);
             }
         }
+        return this;
+    }
+
+    AddAutoBind_For(AutoBindKeys = ['for.'], ResultKey = undefined) {
+        
+        if (typeof AutoBindKeys === 'string')
+            AutoBindKeys = [AutoBindKeys];
+
+        for (let Idx in AutoBindKeys) {
+            let AutoBindKey = AutoBindKeys[Idx];
+            let AllText = $(`[id*='${AutoBindKey}']`);
+            for (let Idx = 0; Idx < AllText.length; Idx++) {
+                let GetText = AllText[Idx];
+                let Id = GetText.id;
+                let GetSplitId = Id.split(`${AutoBindKey}`)[1];
+                ResultKey ??= GetSplitId;
+                this.AddV_For(Id, ResultKey);
+            }
+        }
+
         return this;
     }
 
