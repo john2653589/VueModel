@@ -1,5 +1,5 @@
 ﻿/**
- *  VueModel.js v1.9.7
+ *  VueModel.js v1.9.9c
  *  From Rugal Tu
  *  Based on Vue.js v2.6.12、jQuery Library v3.5.1
  * */
@@ -22,13 +22,12 @@ class VueModel {
 
         this.MethodType = 'GET';
         this.VueResult = {
-            PageData: _PageData,
             Result: {},
+            PageData: _PageData,
             FileResult: {},
             DomEventFunc: {},
             TempResult: {},
             ErrorResult: {},
-            RepeatKey: {},
         };
         this.OnSuccess = function (Result) { };
         this.SuccessBackPage = function () { };
@@ -68,8 +67,6 @@ class VueModel {
     get TempResult() { return this.VueResult.TempResult; }
     get ErrorResult() { return this.VueResult.ErrorResult; }
     set ErrorResult(_ErrorResult) { this.VueResult.ErrorResult = _ErrorResult; }
-    get RepeatKey() { return this.VueResult.RepeatKey; }
-    set RepeatKey(_RepeatKey) { this.VueResult.RepeatKey = _RepeatKey; }
     // #endregion
 
     // #region Init Native Vue
@@ -102,6 +99,11 @@ class VueModel {
         try {
             if (GlobalVueOption != undefined)
                 this.GlobalVueOption = GlobalVueOption;
+        } catch { }
+
+        try {
+            if (AddDevelopmentView == true)
+                this.AddV_DevelopmentView();
         } catch { }
 
         let ElementName = this.ElementName;
@@ -139,6 +141,7 @@ class VueModel {
             if (Object.keys(this.VueOptions.methods).length > 0)
                 $.extend(this, this.VueOptions.methods);
         }
+
     }
 
     /**
@@ -147,7 +150,6 @@ class VueModel {
     VueInit() {
         if (this.Vue == undefined)
             this.Vue = new Vue(this.VueOptions);
-
 
         return this;
     }
@@ -168,28 +170,48 @@ class VueModel {
         if (DevelopmentDivId == undefined) {
             DevelopmentDivId = '__VueModelResult__';
             let RootPage = $(this.ToJQueryName(this.ElementName));
-            let AppendDiv = `<div id="${DevelopmentDivId}"></div>`;
+            let AppendDiv = `<div id="${DevelopmentDivId}" class="row" style="font-size:18px"></div>`;
             RootPage.append(AppendDiv);
         }
 
         let DevelopmentDiv = $(this.ToJQueryName(DevelopmentDivId))[0];
         if (DevelopmentDiv != undefined) {
             DevelopmentDiv.innerHTML =
-                `<label style="background-color:black;color:white;">Vue Model Storage</label>
-                <select id="__VueModelStorageKey__">
-                    <option value="Result">Result</option>
-                    <option value="VueResult">Vue Result</option>
-                    <option value="PageData">PageData</option>
-                    <option value="TempResult">Temp Result</option>
-                    <option value="FileResult">File Result</option>
-                    <option value="ErrorResult">Error Result</option>
-                    <option value="InputToResult">Input To Result</option>
-                </select>
-                <button id="__BtnVueModelStorageInputSave__" class="btn btn-primary" style="display:none">Input Save</button>
+                `
+                <div class="col col-auto">
+                    <label style="background-color:black;color:white;">Vue Model Storage</label><br />
+                    <div class="form-check">
+                       <input id="__CheckboxDarkModel__" type="checkbox" class="form-check-input" checked v-on:change="DarkModelChange()"/>
+                       <label class="form-check-label" style="background-color:black;color:white;" for="__CheckboxDarkModel__">Dark Mode</label>
+                    </div>
+                </div>
+
+                <div class="col col-auto align-self-center">
+                    <select id="__FindStorageKey__" class="form-select col col-auto">
+                        <option value="VueResult">VueResult</option>
+                        <option v-for="(Item, Idx) in Object.keys(JSON.parse( JSON.stringify(_data) ))" :value="Item">{{ Item }}</option>
+                    </select>
+                </div>
+                
+                <div class="col col-auto align-self-center">
+                    <button id="__BtnOpenInput__" class="btn btn-success">Open Input</button>
+                    <button style="display:none" id="__BtnCloseInput__" class="btn btn-warning">Close Input</button>
+                    <button id="__BtnVueModelStorageInputSave__" class="btn btn-primary" style="display:none">Input Save</button>
+                </div>
+
+                <div class="col align-self-center d-flex justify-content-start">
+                    <label class="align-self-center" style="font-size:18px; background-color:black; color:white">Font-Size</label>
+                    <input id="__StorageFontSize__" v-on:change="FontSizeChange()" class="ms-1 form-control" style="width:80px" type="number" value="20"/>
+                </div>
+
                 <br />
-                <textarea id="__VueModelOutput__" readonly style="width: 100%; height: 100%; margin-top: 10px;min-height:500px"></textarea>`;
+                <textarea id="__VueModelOutput__" readonly style="width: 100%; height: 100%; margin-top: 10px;min-height:500px; background-color:black; color:white; font-size:20px"></textarea>`;
 
             this.AddFunction('StorageInputSave', () => this.StorageInputSave(), '__BtnVueModelStorageInputSave__');
+            this.AddFunction('OpenInput', () => this.OnOpenInput(), '__BtnOpenInput__');
+            this.AddFunction('CloseInput', () => this.OnCloseInput(), '__BtnCloseInput__');
+            this.AddFunction('DarkModelChange', () => this.OnDarkModelChange());
+            this.AddFunction('FontSizeChange', () => this.OnFontSizeChange());
             let Timer = () => setInterval(this.DevelopmentOutput, 100, this);
             Timer.call(this);
         }
@@ -198,29 +220,70 @@ class VueModel {
     }
 
     DevelopmentOutput(ShowVueModel) {
-        let StorageKeyJObj = $('#__VueModelStorageKey__');
+        let StorageKey = $('#__FindStorageKey__').val();
         let OutputJObj = $('#__VueModelOutput__');
         let InputSaveBtnJObj = $('#__BtnVueModelStorageInputSave__');
-        let StorageKey = StorageKeyJObj.val();
-        if (StorageKey != 'InputToResult') {
-            let OutputKey = ShowVueModel[StorageKey];
-            OutputJObj.val(JSON.stringify(OutputKey, null, 2));
-            InputSaveBtnJObj.hide();
-            OutputJObj.attr('readonly', true);
+
+        if (InputSaveBtnJObj.is(":hidden")) {
+            if (StorageKey != 'VueResult') {
+                OutputJObj.val(JSON.stringify(ShowVueModel['VueResult'][StorageKey], null, 2));
+            } else {
+                OutputJObj.val(JSON.stringify(ShowVueModel[StorageKey], null, 2));
+            }
+        }
+    }
+
+    OnOpenInput() {
+        $('#__BtnOpenInput__').hide();
+        $('#__BtnCloseInput__').show();
+        let OutputJObj = $('#__VueModelOutput__');
+        let InputSaveBtnJObj = $('#__BtnVueModelStorageInputSave__');
+        OutputJObj.attr('readonly', false);
+        InputSaveBtnJObj.show();
+    }
+
+    OnCloseInput() {
+        $('#__BtnOpenInput__').show();
+        $('#__BtnCloseInput__').hide();
+        let OutputJObj = $('#__VueModelOutput__');
+        let InputSaveBtnJObj = $('#__BtnVueModelStorageInputSave__');
+        OutputJObj.attr('readonly', true);
+        InputSaveBtnJObj.hide();
+    }
+
+    OnDarkModelChange() {
+        let IsChecked = $('#__CheckboxDarkModel__').prop('checked');
+        if (IsChecked) {
+            $('#__VueModelOutput__').css('background-color', 'black')
+            $('#__VueModelOutput__').css('color', 'white')
         }
         else {
-            OutputJObj.attr('readonly', false);
-            InputSaveBtnJObj.show();
+            $('#__VueModelOutput__').css('background-color', 'white')
+            $('#__VueModelOutput__').css('color', 'black')
         }
+    }
+
+    OnFontSizeChange() {
+        let GetSize = $('#__StorageFontSize__').val();
+        $('#__VueModelOutput__').css('font-size', `${GetSize}px`);
     }
 
     StorageInputSave() {
-        let OutputJObj = $('#__VueModelOutput__');
-        let GetConvertResult = OutputJObj.val();
+        let GetConvertResult = $('#__VueModelOutput__').val();
         let GetResultJson = JSON.parse(GetConvertResult);
-        this.UpdateVueModel(GetResultJson);
+        let StorageKey = $('#__FindStorageKey__').val();
+        if (StorageKey != 'VueResult') {
+            this.VueResult[StorageKey] = GetResultJson;
+        } else {
+            let AllKey = Object.keys(GetResultJson);
+            for (let i = 0; i < AllKey.length; i++) {
+                let Key = AllKey[i];
+                let Val = GetResultJson[Key];
+                this.VueResult[Key] = Val;
+            }
+        }
+        this.VueRefresh();
     }
-
     // #endregion
 
     // #region Add Url And Reset VueResult
@@ -450,7 +513,9 @@ class VueModel {
     AddV_On_Change(ObjectId, ChangeEvent) {
         let EventFuncKey = 'OnChangeEvent';
         this.PushDomEvent(ObjectId, EventFuncKey, ChangeEvent);
-        this.AddV_On(ObjectId, 'change', undefined, () => this.OnDomEvent(ObjectId, EventFuncKey));
+        this.AddV_On(ObjectId, 'change', undefined, (Arg) => {
+            this.OnDomEvent(ObjectId, EventFuncKey, Arg);
+        });
         return this;
     }
 
@@ -837,7 +902,7 @@ class VueModel {
         return this;
     }
 
-    AddV_File(InputId, UploadUrl, ResultKey = undefined) {
+    AddV_File(InputId, UploadUrl = undefined, ResultKey = undefined) {
 
         let ReplaceId = InputId.replaceAll('_', '');
         ResultKey ??= `${ReplaceId}`;
@@ -846,7 +911,7 @@ class VueModel {
             this.AddSubmit(ResultKey, UploadUrl);
 
         let SetResult = this.FileResult;
-        this.AddV_On_Base(InputId, 'change', undefined, (e) => {
+        this.AddV_On_Change(InputId, (e) => {
             let Files = e.target.files;
             if (SetResult[ResultKey] == undefined)
                 SetResult[ResultKey] = {};
@@ -856,7 +921,6 @@ class VueModel {
                 SetResult[ResultKey][ReplaceId].push(GetFile);
             }
         });
-
         return this;
     }
 
@@ -890,74 +954,9 @@ class VueModel {
         return this;
     }
 
-    AddV_Repeat_Id(ObjectId) {
-        let GetRepeatId = this.ConvertRepeatId(ObjectId);
-        this.AddV_Bind(ObjectId, 'id', GetRepeatId);
-        return this;
-    }
-
-    AddV_Repeat(ObjectId, ResultKey = undefined, IsDefaultOne = true) {
-        ResultKey ??= ObjectId;
-        ResultKey = this.ConvertResultKey(ResultKey);
-        let GetResult = this.RCS_GetResult(ResultKey, this.VueResult, false);
-        if (GetResult == undefined) {
-            this.RCS_UpdateResult(ResultKey, [], this.VueResult, true);
-            this.AddV_For(ObjectId, ResultKey);
-
-            let GetResult = this.RCS_GetResult(ResultKey, this.VueResult, false);
-            if (GetResult == undefined) {
-                let SetArray = [];
-                if (IsDefaultOne)
-                    SetArray.push({});
-                this.RCS_UpdateResult(ResultKey, SetArray, this.VueResult, true);
-            }
-        }
-        return this;
-    }
-
-    AddV_Repeat_InputMult(RepeatKey, ObjectId_ResultKey = {}) {
-        let DomSetFunc = (ObjectId, RepeatResult) => {
-            this.AddV_Model(ObjectId, RepeatResult);
-        };
-        this.BaseSet_RepeatBind(RepeatKey, ObjectId_ResultKey, DomSetFunc);
-        return this;
-    }
-
-    AddV_Repeat_TextMult(RepeatKey, ObjectId_ResultKey = {}) {
-        let DomSetFunc = (ObjectId, RepeatResult) => {
-            this.AddV_Text(ObjectId, RepeatResult);
-        };
-        this.BaseSet_RepeatBind(RepeatKey, ObjectId_ResultKey, DomSetFunc);
-        return this;
-    }
-
-    AddV_Repeat_SelectBind() {
-
-    }
-
     // #endregion
 
     // #region Base Dom Set Method
-
-    BaseSet_RepeatBind(RepeatKey, ObjectId_ResultKey = {}, DomSetFunc = function (ObjectId, RepeatResult) { }) {
-        RepeatKey = this.ConvertResultKey(RepeatKey);
-        let AllKey = Object.keys(ObjectId_ResultKey);
-        for (let Idx in AllKey) {
-            let ObjectId = AllKey[Idx];
-            let ResultKey = ObjectId_ResultKey[ObjectId];
-
-            let ReplaceId = this.ToReplaceObjectId(ObjectId);
-            if (typeof ResultKey === 'object')
-                ResultKey = ReplaceId;
-
-            let RepeatResult = this.ConvertRepeatResult(RepeatKey, ResultKey);
-            this.AddV_Repeat_Id(ObjectId);
-
-            DomSetFunc(ObjectId, RepeatResult);
-        }
-        return this;
-    }
-
     BaseSet_DynamicInput(OuterId, InputId, TextId = undefined, ValueKey = undefined, DisplayKey = undefined, SourceKey = undefined, ResultKey = undefined) {
 
         let ReplaceId = this.ToReplaceObjectId(OuterId);
@@ -1189,7 +1188,7 @@ class VueModel {
     }
 
     AddAutoBind_For(AutoBindKeys = ['for.'], ResultKey = undefined) {
-        
+
         if (typeof AutoBindKeys === 'string')
             AutoBindKeys = [AutoBindKeys];
 
@@ -1200,8 +1199,8 @@ class VueModel {
                 let GetText = AllText[Idx];
                 let Id = GetText.id;
                 let GetSplitId = Id.split(`${AutoBindKey}`)[1];
-                ResultKey ??= GetSplitId;
-                this.AddV_For(Id, ResultKey);
+                let SetResultKey = ResultKey ?? GetSplitId;
+                this.AddV_For(Id, SetResultKey);
             }
         }
 
@@ -1239,8 +1238,9 @@ class VueModel {
         let SendUrl = this.GetUrl(Key);
 
         let IsDevelopment = this.IsDevelopment;
-        if (IsDevelopment)
-            console.log(SendData);
+        if (IsDevelopment) {
+            console.log(`Ajax Send : ${SendData}`);
+        }
 
         if (typeof SendData === 'object' && Object.keys(SendData).length > 0 && SendType == 'POST')
             SendData = JSON.stringify(SendData);
@@ -1266,7 +1266,7 @@ class VueModel {
             error: function (Error) {
                 if (IsDevelopment) {
                     RootResult.ErrorResult = Error;
-                    console.log(Error);
+                    console.log(`Ajax Error : ${Error}`);
                 }
                 ErrorCallback.call(Caller, Error);
                 OnError?.call(Caller, Error);
@@ -1275,8 +1275,8 @@ class VueModel {
                 CompleteCallback.call(Caller);
                 OnComplate?.call(Caller);
             },
-            header: {
-                Authorization: 'aaaa',
+            headers: {
+                Authorization: this.GetToken == undefined ? 'null' : this.GetToken(),
             },
         };
         $.ajax(this.AjaxOptions);
@@ -1335,8 +1335,9 @@ class VueModel {
         }
 
         let IsDevelopment = this.IsDevelopment;
-        if (IsDevelopment)
-            console.log(SendData);
+        if (IsDevelopment) {
+            console.log(`Submit Send : ${SendData}`);
+        }
 
         if (typeof SendData === 'object' && Object.keys(SendData).length > 0 && MethodType == 'POST')
             SendData = JSON.stringify(SendData);
@@ -1361,13 +1362,16 @@ class VueModel {
                 OnError?.call(Caller, Error);
                 if (IsDevelopment) {
                     RootResult.ErrorResult = Error;
-                    console.log(Error);
+                    console.log(`Submit Error : ${Error}`);
                 }
                 if (!MuteRequestErrorAlert)
                     alert('Request 錯誤');
             },
             complete: function () {
                 OnComplate?.call(Caller);
+            },
+            headers: {
+                Authorization: this.GetToken == undefined ? 'null' : this.GetToken(),
             },
         };
         $.ajax(SubmitOptions);
@@ -1427,6 +1431,9 @@ class VueModel {
             complete: function () {
                 OnComplate?.call(Caller);
             },
+            headers: {
+                Authorization: this.GetToken == undefined ? 'null' : this.GetToken(),
+            },
         };
         $.ajax(SubmitOptions);
         return this;
@@ -1449,6 +1456,78 @@ class VueModel {
             }
             else
                 this.RCS_Submit_FileMult(KeyParam, SubmitIndex + 1, _OnComplate);
+        }
+        else if (_OnComplate != undefined)
+            _OnComplate();
+    }
+
+    Submit_File_Base(Key, SendData, SendParam = undefined, _OnSuccess = undefined, _OnError = undefined, _OnComplate = undefined) {
+
+        let SuccessBackPage = this.FileSuccessBackPage;
+        let OnSuccess, OnError, OnComplate, SendUrl;
+        let Caller = this;
+        let ReplaceKey = this.ToReplaceObjectId(Key);
+        let Param = this.SubmitUrl[ReplaceKey];
+
+        OnSuccess = _OnSuccess ?? Param.OnSuccess;
+        OnError = _OnError ?? Param.OnError;
+        OnComplate = _OnComplate ?? Param.OnComplate;
+
+        Key ??= this.ElementName;
+
+        SendUrl = Param.Url;
+        SendUrl = this.ConvertToUrl(SendUrl);
+
+        if (SendParam != undefined) {
+            let UrlParam = this.ConvertUrlParam(SendParam);
+            SendUrl += `?${UrlParam}`;
+        }
+
+        let FileModel = new FormData();
+        if (SendData != undefined)
+            FileModel.append(Key, SendData);
+
+        let SuccessCheck = this.SubmitSuccessCheck;
+        let SubmitOptions = {
+            type: 'POST',
+            url: SendUrl,
+            data: FileModel,
+            contentType: false,
+            processData: false,
+            success: function (Result) {
+                let IsSuccess = SuccessCheck == undefined ? true : SuccessCheck.call(Caller, Result);
+                if (IsSuccess) {
+                    OnSuccess?.call(Caller, Result);
+                    SuccessBackPage?.call(Caller);
+                }
+            },
+            error: function (Error) {
+                OnError?.call(Caller, Error);
+                alert('上傳失敗');
+            },
+            complete: function () {
+                OnComplate?.call(Caller);
+            },
+            headers: {
+                Authorization: this.GetToken == undefined ? 'null' : this.GetToken(),
+            },
+        };
+        $.ajax(SubmitOptions);
+        return this;
+    }
+
+    Submit_FileMult_Base(Key, FileDataArray, SendParamArray = undefined, _OnComplate = undefined) {
+        this.RCS_Submit_FileMult_Base(Key, FileDataArray, SendParamArray, 0, _OnComplate);
+        return this;
+    }
+
+    RCS_Submit_FileMult_Base(Key, FileDataArray, SendParamArray, SubmitIndex, _OnComplate = undefined) {
+        if (SubmitIndex < FileDataArray.length) {
+            let FileData = FileDataArray[SubmitIndex];
+            let SendParam = SendParamArray[SubmitIndex];
+            this.Submit_File_Base(Key, FileData, SendParam, () => {
+                this.RCS_Submit_FileMult_Base(Key, FileDataArray, SendParamArray, SubmitIndex + 1, _OnComplate);
+            });
         }
         else if (_OnComplate != undefined)
             _OnComplate();
@@ -1488,6 +1567,9 @@ class VueModel {
             },
             complete: function () {
                 OnComplate?.call(Caller);
+            },
+            headers: {
+                Authorization: this.GetToken == undefined ? 'null' : this.GetToken(),
             },
         };
         $.extend(SubmitOptions, AjaxOption);
@@ -1721,12 +1803,13 @@ class VueModel {
     }
 
     IsNotNullAndEmpty(AssignString) {
+        if (AssignString == undefined)
+            return false;
         AssignString = AssignString.replaceAll(' ', '');
         if (AssignString != undefined && AssignString != '')
             return true;
         return false;
     }
-
 
     /**
      * *預設內部 Function
@@ -1799,10 +1882,10 @@ class VueModel {
         EventStorage.push(EventFunc);
     }
 
-    OnDomEvent(ObjectId, EventFuncKey) {
+    OnDomEvent(ObjectId, EventFuncKey, Arg) {
         let EventStorage = this.DomEventFunc[ObjectId][EventFuncKey];
         for (let Idx in EventStorage) {
-            EventStorage[Idx]();
+            EventStorage[Idx](Arg);
         }
     }
     // #endregion
@@ -1817,12 +1900,14 @@ class VueModel {
         }
         return BoolValue;
     }
+
     ConvertNumber(NumberValue) {
         let RetNumber = -1;
         if (this.IsNumber(NumberValue))
             RetNumber = Number(NumberValue);
         return RetNumber;
     }
+
     ConvertBoolOrNumber(ConvertValue) {
 
         if (this.IsBool(ConvertValue))
@@ -1874,22 +1959,12 @@ class VueModel {
         return UrlParam;
     }
 
-    ConvertRepeatId(ObjectId) {
-        let RepeatId = `'Repeat_${ObjectId}_' + Idx`;
-        return RepeatId;
-    }
-
-    ConvertRepeatResult(RepeatKey, ResultKey) {
-        let RepeatResult = `${RepeatKey}[Idx]['${ResultKey}']`;
-        return RepeatResult;
-    }
     ConvertResultKey(Key, ResultKey = 'Result') {
         if (!Key.includes('.'))
             Key = `${ResultKey}.${Key}`;
 
         return Key;
     }
-
 
     IsNumber(NumberValue, IsCanEmpty = true) {
         if (!IsCanEmpty && (NumberValue == '' || NumberValue == undefined))
@@ -1905,26 +1980,35 @@ class VueModel {
         }
         return false;
     }
+
     IsNumberOrBool(ConvertValue) {
         return this.IsBool(ConvertValue) || this.IsNumber(ConvertValue);
     }
 
-    IsHasFile(FindKey = undefined) {
-        let AllKey = Object.keys(this.FileResult);
-        if (FindKey != undefined)
-            FindKey = this.ToReplaceObjectId(FindKey);
-        let HasFile = false;
-        if (AllKey.length > 0) {
-            for (let Idx in AllKey) {
-                let Key = AllKey[Idx];
-                if (FindKey == undefined || FindKey == Key) {
-                    let GetFile = this.FileResult[Key];
-                    if (GetFile != undefined && GetFile != null)
-                        HasFile = true;
+    IsHasFile(FindKey = undefined, ResultKey = undefined) {
+        ResultKey ??= FindKey;
+        if (FindKey != undefined) {
+            let GetResult = this.FileResult[ResultKey];
+            if (GetResult != undefined) {
+                let GetKey = GetResult[FindKey];
+                if (GetKey != undefined && GetKey.length > 0)
+                    return true;
+            }
+        } else {
+            let AllKey = Object.keys(this.FileResult);
+            if (AllKey.length > 0) {
+                for (let Idx in AllKey) {
+                    let ResultKey = AllKey[Idx];
+                    let GetResult = this.FileResult[ResultKey];
+                    if (GetResult != undefined) {
+                        let GetKey = GetResult[FindKey];
+                        if (GetKey != undefined && GetKey.length > 0)
+                            return true;
+                    }
                 }
             }
         }
-        return HasFile;
+        return false;
     }
 
     // #endregion
