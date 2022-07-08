@@ -1,5 +1,5 @@
 ﻿/**
- *  VueModel.js v1.9.9c
+ *  VueModel.js v1.9.9d
  *  From Rugal Tu
  *  Based on Vue.js v2.6.12、jQuery Library v3.5.1
  * */
@@ -1995,15 +1995,23 @@ class VueModel {
                     return true;
             }
         } else {
-            let AllKey = Object.keys(this.FileResult);
-            if (AllKey.length > 0) {
-                for (let Idx in AllKey) {
-                    let ResultKey = AllKey[Idx];
+            let AllResultKey = Object.keys(this.FileResult);
+            if (AllResultKey.length > 0) {
+                for (let i = 0; i < AllResultKey.length; i++) {
+                    let ResultKey = AllResultKey[i];
                     let GetResult = this.FileResult[ResultKey];
                     if (GetResult != undefined) {
-                        let GetKey = GetResult[FindKey];
-                        if (GetKey != undefined && GetKey.length > 0)
-                            return true;
+                        let AllKey = Object.keys(GetResult);
+                        if (AllKey.length > 0) {
+                            for (let j = 0; i < AllKey.length; j++) {
+                                let GetKey = AllKey[j];
+                                let GetFileArray = GetResult[GetKey];
+                                if (GetFileArray != undefined && GetFileArray.length > 0) {
+                                    return true;
+                                }
+                            }
+                        }
+
                     }
                 }
             }
