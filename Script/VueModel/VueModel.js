@@ -1,9 +1,8 @@
 ﻿/**
- *  VueModel.js v1.9.9d
+ *  VueModel.js v1.9.10
  *  From Rugal Tu
  *  Based on Vue.js v2.6.12、jQuery Library v3.5.1
  * */
-
 
 class VueModel {
     constructor(_Url, _PageData = {}, _VueOptions = {}, _ElementName = '#PageContent', IsMountedShow = true) {
@@ -17,8 +16,7 @@ class VueModel {
         this.UrlKeyDic[this.ElementName] = _Url;
 
         this.SubmitUrl = {};
-        this.SubmitCheckColumnKeys = {};
-        this.ColumnCHTName = {};
+        this.SubmitRequiredDic = {};
 
         this.MethodType = 'GET';
         this.VueResult = {
@@ -42,7 +40,6 @@ class VueModel {
         };
         this.GetToken = undefined;
         this.GlobalVueOption = undefined;
-
         this.IsMountedShow = IsMountedShow;
         this.IsDevelopment = false;
 
@@ -358,18 +355,40 @@ class VueModel {
         return this;
     }
 
-    /**
-     * 加入 'Submit()' 前檢核欄位
-     * @param {any} Key 不得為 undefined
-     * @param {any} CheckColumns { ColumnName: ColumnDisplay }
-     * @param {any} OnCheckFalse (FalseColumn) => { } ，若為 undefined 則會呼叫 Alert(FalseColumn)
-     */
-    AddSubmit_CheckColumn(Key, CheckColumns, OnCheckFalse = undefined) {
-        Key ??= this.ElementName;
-        this.SubmitCheckColumnKeys[Key] = CheckColumns;
-        OnCheckFalse ??= (FalseColumn) => alert(`"${FalseColumn}" 不得為空`);
-        this.OnCheckFalse = OnCheckFalse;
+    AddSubmit_Required(ColumnKey_Name = {}, SubmitKey = 'all', OnCheckFalse = this.DefaultOnCheckFalse, RequiredCheck = this.DefaultRequiredCheck) {
+        SubmitKey = this.IsNotNullAndEmpty(SubmitKey) ? SubmitKey : 'all';
+
+        let ColumnNameDic = this.SubmitRequiredDic;
+        if (!(SubmitKey in ColumnNameDic))
+            ColumnNameDic[SubmitKey] = {};
+
+        OnCheckFalse ??= this.DefaultOnCheckFalse;
+        RequiredCheck ??= this.DefaultRequiredCheck;
+
+        let GetColumnNameDic = ColumnNameDic[SubmitKey];
+        let AllKeys = Object.keys(ColumnKey_Name);
+        for (let i = 0; i < AllKeys.length; i++) {
+            let ColumnKey = AllKeys[i];
+            let ColumnName = ColumnKey_Name[ColumnKey];
+            GetColumnNameDic[ColumnKey] = {
+                ColumnName,
+                OnCheckFalse,
+                RequiredCheck,
+            };
+        }
         return this;
+    }
+
+    AddSubmit_Required_NumberZero(ColumnKey_Name = {}, SubmitKey = 'all', OnCheckFalse = this.DefaultOnCheckFalse, RequiredCheck = this.RequiredCheck_NumberZero) {
+        return this.AddSubmit_Required(ColumnKey_Name, SubmitKey, OnCheckFalse, RequiredCheck);
+    }
+
+    AddSubmit_Required_NullEmpty(ColumnKey_Name = {}, SubmitKey = 'all', OnCheckFalse = this.DefaultOnCheckFalse, RequiredCheck = this.RequiredCheck_StringNullEmpty) {
+        return this.AddSubmit_Required(ColumnKey_Name, SubmitKey, OnCheckFalse, RequiredCheck);
+    }
+
+    AddSubmit_Required_ArrayEmpty(ColumnKey_Name = {}, SubmitKey = 'all', OnCheckFalse = this.DefaultOnCheckFalse, RequiredCheck = this.RequiredCheck_ArrayEmpty) {
+        return this.AddSubmit_Required(ColumnKey_Name, SubmitKey, OnCheckFalse, RequiredCheck);
     }
 
     /**
@@ -382,6 +401,7 @@ class VueModel {
         this.SuccessBackPage = () => this.ToUrl(Action, Controller, Domain);
         return this;
     }
+
     AddSubmit_File_SuccessBackPage(Action, Controller = undefined, Domain = undefined) {
         this.FileSuccessBackPage = () => this.ToUrl(Action, Controller, Domain);
         return this;
@@ -1326,13 +1346,9 @@ class VueModel {
         ErrorAlert = this.ErrorAlert;
         let SuccessCheck = this.SubmitSuccessCheck;
 
-        let CheckModel = this.CheckSubmitModel(Key, SendData);
-        if (!CheckModel.Check) {
-            if (this.OnCheckFalse != undefined)
-                this.OnCheckFalse(CheckModel.FalseColumn);
-
+        let IsCheckRequired = this.Check_SubmitRequired(SendData, Key);
+        if (!IsCheckRequired)
             return this;
-        }
 
         let IsDevelopment = this.IsDevelopment;
         if (IsDevelopment) {
@@ -1401,12 +1417,9 @@ class VueModel {
             SendUrl += `?${UrlParam}`;
         }
 
-        let CheckModel = this.CheckSubmitModel(Key, SendData);
-        if (!CheckModel.Check) {
-            if (this.OnCheckFalse != undefined)
-                this.OnCheckFalse(CheckModel.FalseColumn);
+        let IsCheckRequired = this.Check_SubmitRequired(SendData, Key);
+        if (!IsCheckRequired)
             return this;
-        }
 
         let FileModel = this.ConvertSendFile(Key, SendData);
 
@@ -1663,48 +1676,6 @@ class VueModel {
 
     /**
      * *預設內部 Function
-     * 於 Submit 前檢核各項欄位
-     * @param {any} SubmitKey 不得為 undefined
-     * @param {any} Model 不得為 undefined
-     */
-    CheckSubmitModel(SubmitKey, Model) {
-        let CheckRet = {
-            Check: true,
-            FalseColumn: '',
-        };
-
-        if (this.SubmitCheckColumnKeys == undefined)
-            return CheckRet;
-
-        let CheckKeys = Object.keys(this.SubmitCheckColumnKeys);
-        if (CheckKeys.length == 0)
-            return CheckRet;
-
-        let CheckColumns = this.SubmitCheckColumnKeys[SubmitKey];
-        if (CheckColumns.length == 0)
-            return CheckRet;
-
-        return this.CheckColumn(CheckColumns, Model);
-    }
-
-    CheckColumn(CheckColumns, Model) {
-        let CheckRet = {
-            Check: true,
-            FalseColumn: '',
-        };
-        for (let Key in CheckColumns) {
-            let Val = CheckColumns[Key];
-            if (Model[Key] == undefined || Model[Key] === '') {
-                CheckRet.Check = false;
-                CheckRet.FalseColumn = Val;
-                return CheckRet;
-            }
-        }
-        return CheckRet;
-    }
-
-    /**
-     * *預設內部 Function
      * 將參數轉換為相對網址
      * @param {any} Action 不得為 undefined
      * @param {any} Controller 若為 undefined 則忽略
@@ -1805,8 +1776,8 @@ class VueModel {
     IsNotNullAndEmpty(AssignString) {
         if (AssignString == undefined)
             return false;
-        AssignString = AssignString.replaceAll(' ', '');
-        if (AssignString != undefined && AssignString != '')
+        let ReplaceString = AssignString.replaceAll(' ', '');
+        if (ReplaceString != undefined && ReplaceString != '')
             return true;
         return false;
     }
@@ -1861,6 +1832,90 @@ class VueModel {
             Ret.push(AddAttr);
         }
         return Ret;
+    }
+
+    // #endregion
+
+    // #region Required Check
+
+    RequiredCheck_StringNullEmpty(Value) {
+        return this.IsNotNullAndEmpty(Value);
+    }
+
+    RequiredCheck_NumberZero(Value) {
+        if (typeof (Value) === 'number')
+            return Value > 0;
+        return false;
+    }
+
+    RequiredCheck_ArrayEmpty(Value) {
+        if (typeof (Value) === 'object' && Array.isArray(Value))
+            return Value.length > 0;
+        return false;
+    }
+
+    DefaultRequiredCheck(Value) {
+        if (Value == undefined || Value == null)
+            return false;
+
+        if (typeof (Value) === 'string')
+            return this.RequiredCheck_StringNullEmpty(Value);
+
+        if (typeof (Value) === 'number')
+            return this.RequiredCheck_NumberZero(Value);
+
+        if (typeof (Value) === 'object' && Array.isArray(Value))
+            return this.RequiredCheck_ArrayEmpty(Value);
+
+        return true;
+    }
+
+    DefaultOnCheckFalse(ColumnName) {
+        alert(`「${ColumnName}」為必填欄位`);
+    }
+
+    Check_SubmitRequired(SendData, SubmitKey = undefined) {
+
+        let RequiredDic = this.SubmitRequiredDic;
+        if (SubmitKey != undefined && SubmitKey in RequiredDic) {
+            if (!this.BaseCheck_SubmitRequired(SendData, SubmitKey))
+                return false;
+        }
+
+        if ('all' in RequiredDic) {
+            if (!this.BaseCheck_SubmitRequired(SendData, 'all'))
+                return false;
+        }
+
+        return true;
+    }
+
+    BaseCheck_SubmitRequired(SendData, SubmitKey) {
+        let RequiredDic = this.SubmitRequiredDic;
+
+        let GetRequiredDic = RequiredDic[SubmitKey];
+
+        let AllKeys = Object.keys(GetRequiredDic);
+        for (let i = 0; i < AllKeys.length; i++) {
+            let ColumnKey = AllKeys[i];
+            let GetRequiredModel = GetRequiredDic[ColumnKey];
+            let ColumnName = GetRequiredModel['ColumnName'];
+            let RequiredCheck = GetRequiredModel['RequiredCheck'];
+            let OnCheckFalse = GetRequiredModel['OnCheckFalse'];
+
+            if (!(ColumnKey in SendData)) {
+                OnCheckFalse.call(this, ColumnName);
+                return false;
+            }
+
+            let GetDataValue = SendData[ColumnKey];
+            if (!RequiredCheck.call(this, GetDataValue)) {
+                OnCheckFalse.call(this, ColumnName);
+                return false;
+            }
+        }
+
+        return true;
     }
 
     // #endregion

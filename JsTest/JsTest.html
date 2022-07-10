@@ -1,0 +1,22 @@
+
+<script src="../Script/jquery/dist/jquery.min.js"></script>
+<script src="../Script/Vue/vue.js"></script>
+<script src="../Script/VueModel/VueModel.js"></script>
+
+<script>
+
+    let Model = new VueModel()
+        .AddSubmit_Required({
+            'TestColumn1': 'ด๚ธี1',
+        })
+        .AddSubmit_Required_NumberZero({
+            'TestColumn2': 'ด๚ธี2',
+        })
+        .Check_SubmitRequired({
+            'TestColumn1': 1,
+            'TestColumn2': 0,
+        });
+
+
+
+</script>
