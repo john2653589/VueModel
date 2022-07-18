@@ -3,20 +3,35 @@
 <script src="../Script/Vue/vue.js"></script>
 <script src="../Script/VueModel/VueModel.js"></script>
 
+<body>
+    <div id="PageContent">
+        <input id="MyName" ColumnName="Test" />
+        <input id="inp.MyName2" />
+        <button id="BtnSend"></button>
+    </div>
+</body>
+
 <script>
+    // string int array
+    // null undefine zeor(0) empty[]
 
     let Model = new VueModel()
+        .AddAutoBind_Input()
+        .AddV_DevelopmentView()
+        .AddSubmit('Create')
+        .AddSubmit('Update')
+
         .AddSubmit_Required({
-            'TestColumn1': 'ด๚ธี1',
-        })
-        .AddSubmit_Required_NumberZero({
-            'TestColumn2': 'ด๚ธี2',
-        })
-        .Check_SubmitRequired({
-            'TestColumn1': 1,
-            'TestColumn2': 0,
-        });
+            MyName: 'My First Name',
+        }, 'Create')
 
+        .AddSubmit_Required_StringNull({
+            MyName2: 'Fuck'
+        })
 
+        .AddV_Button('BtnSend', () => {
+            Model.Submit('Create', 'POST', Model.Result);
+        })
+        .VueInit();
 
 </script>

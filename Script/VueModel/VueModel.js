@@ -1,5 +1,5 @@
 ﻿/**
- *  VueModel.js v1.9.10
+ *  VueModel.js v1.9.10d
  *  From Rugal Tu
  *  Based on Vue.js v2.6.12、jQuery Library v3.5.1
  * */
@@ -355,40 +355,43 @@ class VueModel {
         return this;
     }
 
-    AddSubmit_Required(ColumnKey_Name = {}, SubmitKey = 'all', OnCheckFalse = this.DefaultOnCheckFalse, RequiredCheck = this.DefaultRequiredCheck) {
+    AddSubmit_Required(ColumnKey_Name = {}, RequiredCheck = this.DefaultRequiredCheck, WhenNextCheck = undefined, OnCheckFalse = this.DefaultOnCheckFalse, SubmitKey = 'all') {
         SubmitKey = this.IsNotNullAndEmpty(SubmitKey) ? SubmitKey : 'all';
-
-        let ColumnNameDic = this.SubmitRequiredDic;
-        if (!(SubmitKey in ColumnNameDic))
-            ColumnNameDic[SubmitKey] = {};
 
         OnCheckFalse ??= this.DefaultOnCheckFalse;
         RequiredCheck ??= this.DefaultRequiredCheck;
 
-        let GetColumnNameDic = ColumnNameDic[SubmitKey];
-        let AllKeys = Object.keys(ColumnKey_Name);
-        for (let i = 0; i < AllKeys.length; i++) {
-            let ColumnKey = AllKeys[i];
-            let ColumnName = ColumnKey_Name[ColumnKey];
-            GetColumnNameDic[ColumnKey] = {
-                ColumnName,
-                OnCheckFalse,
-                RequiredCheck,
-            };
-        }
+        this.BaseAddSubmit_Required(undefined, ColumnKey_Name, RequiredCheck, WhenNextCheck, OnCheckFalse, SubmitKey);
+
         return this;
     }
 
-    AddSubmit_Required_NumberZero(ColumnKey_Name = {}, SubmitKey = 'all', OnCheckFalse = this.DefaultOnCheckFalse, RequiredCheck = this.RequiredCheck_NumberZero) {
-        return this.AddSubmit_Required(ColumnKey_Name, SubmitKey, OnCheckFalse, RequiredCheck);
+    AddSubmit_ThenRequired(FromColumnName, ColumnKey_Name = {}, RequiredCheck = this.DefaultRequiredCheck, WhenNextCheck = undefined, OnCheckFalse = this.DefaultOnCheckFalse, SubmitKey = 'all') {
+
+        SubmitKey = this.IsNotNullAndEmpty(SubmitKey) ? SubmitKey : 'all';
+
+        OnCheckFalse ??= this.DefaultOnCheckFalse;
+        RequiredCheck ??= this.DefaultRequiredCheck;
+
+        this.BaseAddSubmit_Required(FromColumnName, ColumnKey_Name, RequiredCheck, WhenNextCheck, OnCheckFalse, SubmitKey);
+
+        return this;
     }
 
-    AddSubmit_Required_NullEmpty(ColumnKey_Name = {}, SubmitKey = 'all', OnCheckFalse = this.DefaultOnCheckFalse, RequiredCheck = this.RequiredCheck_StringNullEmpty) {
-        return this.AddSubmit_Required(ColumnKey_Name, SubmitKey, OnCheckFalse, RequiredCheck);
+    AddSubmit_Required_NumberNotZero(ColumnKey_Name = {}, RequiredCheck = this.RequiredCheck_NumberNotZero, WhenNextCheck = undefined, OnCheckFalse = this.DefaultOnCheckFalse, SubmitKey = 'all') {
+        return this.AddSubmit_Required(ColumnKey_Name, RequiredCheck, WhenNextCheck, OnCheckFalse, SubmitKey);
     }
 
-    AddSubmit_Required_ArrayEmpty(ColumnKey_Name = {}, SubmitKey = 'all', OnCheckFalse = this.DefaultOnCheckFalse, RequiredCheck = this.RequiredCheck_ArrayEmpty) {
-        return this.AddSubmit_Required(ColumnKey_Name, SubmitKey, OnCheckFalse, RequiredCheck);
+    AddSubmit_Required_Number(ColumnKey_Name = {}, RequiredCheck = this.RequiredCheck_Number, WhenNextCheck = undefined, OnCheckFalse = this.DefaultOnCheckFalse, SubmitKey = 'all') {
+        return this.AddSubmit_Required(ColumnKey_Name, RequiredCheck, WhenNextCheck, OnCheckFalse, SubmitKey);
+    }
+
+    AddSubmit_Required_StringNull(ColumnKey_Name = {}, RequiredCheck = this.RequiredCheck_StringNullEmpty, WhenNextCheck = undefined, OnCheckFalse = this.DefaultOnCheckFalse, SubmitKey = 'all') {
+        return this.AddSubmit_Required(ColumnKey_Name, RequiredCheck, WhenNextCheck, OnCheckFalse, SubmitKey);
+    }
+
+    AddSubmit_Required_ArrayEmpty(ColumnKey_Name = {}, RequiredCheck = this.RequiredCheck_ArrayEmpty, WhenNextCheck = undefined, OnCheckFalse = this.DefaultOnCheckFalse, SubmitKey = 'all') {
+        return this.AddSubmit_Required(ColumnKey_Name, RequiredCheck, WhenNextCheck, OnCheckFalse, SubmitKey);
     }
 
     /**
@@ -676,6 +679,65 @@ class VueModel {
         JQueryId.attr(`v-if`, Key);
         return this;
     }
+
+    AddV_Disabled(ObjectId, Key) {
+        this.AddV_Bind(ObjectId, 'disabled', Key);
+        return this;
+    }
+
+    AddV_DisabledMult(ObjectArray, Key) {
+
+        let ObjectIdKey = {};
+        if (Array.isArray(ObjectArray)) {
+            for (let i = 0; i < ObjectArray.length; i++) {
+                let ObjectId = ObjectArray[i];
+                ObjectIdKey[ObjectId] = '';
+            }
+        }
+        else
+            ObjectIdKey = ObjectArray;
+
+        let AllKeys = Object.keys(ObjectIdKey);
+        for (let i = 0; i < AllKeys.length; i++) {
+            let ObjectId = AllKeys[i];
+            let Value = ObjectIdKey[ObjectId];
+            if (!this.IsNotNullAndEmpty(Value) || typeof Value === 'object')
+                Value = Key;
+            this.AddV_Disabled(ObjectId, Key);
+        }
+        return this
+    }
+
+    AddV_ReadOnly(ObjectId, Key) {
+        this.AddV_Bind(ObjectId, 'readonly', Key);
+        return this;
+    }
+
+    AddV_ReadOnlyMult(ObjectArray, Key) {
+
+        let ObjectIdKey = {};
+        if (Array.isArray(ObjectArray)) {
+            for (let i = 0; i < ObjectArray.length; i++) {
+                let ObjectId = ObjectArray[i];
+                ObjectIdKey[ObjectId] = '';
+            }
+        }
+        else
+            ObjectIdKey = ObjectArray;
+
+        let AllKeys = Object.keys(ObjectIdKey);
+        for (let i = 0; i < AllKeys.length; i++) {
+            let ObjectId = AllKeys[i];
+            let Value = ObjectIdKey[ObjectId];
+            if (!this.IsNotNullAndEmpty(Value) || typeof Value === 'object')
+                Value = Key;
+            this.AddV_Disabled(ObjectId, Key);
+        }
+        return this
+    }
+
+
+
     // #endregion
 
     // #region Create Or Set Vue Property For DOM Object
@@ -720,10 +782,10 @@ class VueModel {
 
             this.AddV_Model(SelectId, ResultKey);
 
-            if (!DisplayKey.includes('Item') && !DisplayKey.includes('.'))
+            if (!(DisplayKey.includes('Item') && DisplayKey.includes('.')))
                 DisplayKey = `${V_ForIn}.${DisplayKey}`;
 
-            if (!ValueKey.includes('Item') && !ValueKey.includes('.'))
+            if (!(ValueKey.includes('Item') && ValueKey.includes('.')))
                 ValueKey = `${V_ForIn}.${ValueKey}`;
 
             let OptionObj = $('<option>');
@@ -1259,7 +1321,8 @@ class VueModel {
 
         let IsDevelopment = this.IsDevelopment;
         if (IsDevelopment) {
-            console.log(`Ajax Send : ${SendData}`);
+            console.log(`Ajax Send : `);
+            console.log(SendData);
         }
 
         if (typeof SendData === 'object' && Object.keys(SendData).length > 0 && SendType == 'POST')
@@ -1286,7 +1349,8 @@ class VueModel {
             error: function (Error) {
                 if (IsDevelopment) {
                     RootResult.ErrorResult = Error;
-                    console.log(`Ajax Error : ${Error}`);
+                    console.log(`Ajax Error : `);
+                    console.log(Error);
                 }
                 ErrorCallback.call(Caller, Error);
                 OnError?.call(Caller, Error);
@@ -1776,9 +1840,14 @@ class VueModel {
     IsNotNullAndEmpty(AssignString) {
         if (AssignString == undefined)
             return false;
+
+        if (typeof AssignString != 'string')
+            AssignString = String(AssignString);
+
         let ReplaceString = AssignString.replaceAll(' ', '');
         if (ReplaceString != undefined && ReplaceString != '')
             return true;
+
         return false;
     }
 
@@ -1799,22 +1868,6 @@ class VueModel {
                 }
             }
         } catch (ex) { }
-    }
-
-    ConvertToUrl(SendUrl) {
-
-        if (!(typeof SendUrl === 'string'))
-            return SendUrl;
-
-        if (SendUrl.includes('http'))
-            return SendUrl;
-
-        if (this.Domain != undefined) {
-            if (this.Domain[this.Domain.length - 1] != '/')
-                this.Domain += '/';
-            SendUrl = `${this.Domain}${SendUrl}`;
-        }
-        return SendUrl;
     }
 
     SetAttr(ObjectId, AttrName, AttrValue) {
@@ -1838,17 +1891,23 @@ class VueModel {
 
     // #region Required Check
 
-    RequiredCheck_StringNullEmpty(Value) {
+    RequiredCheck_StringNullEmpty(Value, Data) {
         return this.IsNotNullAndEmpty(Value);
     }
 
-    RequiredCheck_NumberZero(Value) {
+    RequiredCheck_NumberNotZero(Value, Data) {
         if (typeof (Value) === 'number')
             return Value > 0;
         return false;
     }
 
-    RequiredCheck_ArrayEmpty(Value) {
+    RequiredCheck_Number(Value, Data) {
+        if (typeof (Value) === 'number')
+            return Value >= 0;
+        return false;
+    }
+
+    RequiredCheck_ArrayEmpty(Value, Data) {
         if (typeof (Value) === 'object' && Array.isArray(Value))
             return Value.length > 0;
         return false;
@@ -1858,11 +1917,14 @@ class VueModel {
         if (Value == undefined || Value == null)
             return false;
 
+        if (this.IsNumber(Value, false)) {
+            Value = this.ConvertNumber(Value);
+            if (typeof (Value) === 'number')
+                return this.RequiredCheck_NumberNotZero(Value);
+        }
+
         if (typeof (Value) === 'string')
             return this.RequiredCheck_StringNullEmpty(Value);
-
-        if (typeof (Value) === 'number')
-            return this.RequiredCheck_NumberZero(Value);
 
         if (typeof (Value) === 'object' && Array.isArray(Value))
             return this.RequiredCheck_ArrayEmpty(Value);
@@ -1891,8 +1953,8 @@ class VueModel {
     }
 
     BaseCheck_SubmitRequired(SendData, SubmitKey) {
-        let RequiredDic = this.SubmitRequiredDic;
 
+        let RequiredDic = this.SubmitRequiredDic;
         let GetRequiredDic = RequiredDic[SubmitKey];
 
         let AllKeys = Object.keys(GetRequiredDic);
@@ -1900,8 +1962,18 @@ class VueModel {
             let ColumnKey = AllKeys[i];
             let GetRequiredModel = GetRequiredDic[ColumnKey];
             let ColumnName = GetRequiredModel['ColumnName'];
+            let FromColumnName = GetRequiredModel['FromColumnName'];
             let RequiredCheck = GetRequiredModel['RequiredCheck'];
             let OnCheckFalse = GetRequiredModel['OnCheckFalse'];
+            let WhenNextCheck = GetRequiredModel['WhenNextCheck'];
+
+            if (FromColumnName != undefined)
+                continue;
+
+            if (SendData == undefined) {
+                OnCheckFalse.call(this, ColumnName);
+                return false;
+            }
 
             if (!(ColumnKey in SendData)) {
                 OnCheckFalse.call(this, ColumnName);
@@ -1909,14 +1981,69 @@ class VueModel {
             }
 
             let GetDataValue = SendData[ColumnKey];
-            if (!RequiredCheck.call(this, GetDataValue)) {
+            if (!RequiredCheck.call(this, GetDataValue, SendData)) {
                 OnCheckFalse.call(this, ColumnName);
                 return false;
             }
-        }
 
+            if (WhenNextCheck != undefined && WhenNextCheck.call(this, SendData)) {
+                if (!this.RCS_BaseCheck_ThenRequired(ColumnKey, SendData, SubmitKey)) {
+                    return false;
+                }
+            }
+
+        }
         return true;
     }
+
+    RCS_BaseCheck_ThenRequired(FindFromColumnName, SendData, SubmitKey) {
+        let RequiredDic = this.SubmitRequiredDic[SubmitKey];
+        let AllKeys = Object.keys(RequiredDic);
+        for (let i = 0; i < AllKeys.length; i++) {
+            let ColumnKey = AllKeys[i];
+            let CheckObject = RequiredDic[ColumnKey];
+            let ColumnName = CheckObject['ColumnName'];
+            let FromColumnName = CheckObject['FromColumnName'];
+            let RequiredCheck = CheckObject['RequiredCheck'];
+            let OnCheckFalse = CheckObject['OnCheckFalse'];
+
+            let CheckValue = SendData[ColumnKey];
+            if (FromColumnName == FindFromColumnName) {
+                if (RequiredCheck.call(this, CheckValue)) {
+                    if (!this.RCS_BaseCheck_ThenRequired(ColumnKey, CheckValue, SubmitKey)) {
+                        return false;
+                    }
+                }
+                else {
+                    OnCheckFalse.call(this, ColumnName);
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    BaseAddSubmit_Required(FromColumnName, ColumnKey_Name, RequiredCheck, WhenNextCheck, OnCheckFalse, SubmitKey) {
+
+        let ColumnNameDic = this.SubmitRequiredDic;
+        if (!(SubmitKey in ColumnNameDic))
+            ColumnNameDic[SubmitKey] = {};
+
+        let GetColumnNameDic = ColumnNameDic[SubmitKey];
+        let AllKeys = Object.keys(ColumnKey_Name);
+        for (let i = 0; i < AllKeys.length; i++) {
+            let ColumnKey = AllKeys[i];
+            let ColumnName = ColumnKey_Name[ColumnKey];
+            GetColumnNameDic[ColumnKey] = {
+                ColumnName,
+                OnCheckFalse,
+                RequiredCheck,
+                FromColumnName,
+                WhenNextCheck,
+            };
+        }
+    }
+
 
     // #endregion
 
@@ -1993,6 +2120,22 @@ class VueModel {
         return SendForm;
     }
 
+    ConvertToUrl(SendUrl) {
+
+        if (!(typeof SendUrl === 'string'))
+            return SendUrl;
+
+        if (SendUrl.includes('http'))
+            return SendUrl;
+
+        if (this.Domain != undefined) {
+            if (this.Domain[this.Domain.length - 1] != '/')
+                this.Domain += '/';
+            SendUrl = `${this.Domain}${SendUrl}`;
+        }
+        return SendUrl;
+    }
+
     ConvertUrlParam(Param) {
         let GetParams = [];
         if (typeof Param === 'string')
@@ -2014,6 +2157,11 @@ class VueModel {
         return UrlParam;
     }
 
+    ConvertFullUrl(SendUrl, Param) {
+        let FullUrl = `${this.ConvertToUrl(SendUrl)}?${this.ConvertUrlParam(Param)}`;
+        return FullUrl;
+    }
+
     ConvertResultKey(Key, ResultKey = 'Result') {
         if (!Key.includes('.'))
             Key = `${ResultKey}.${Key}`;
@@ -2022,10 +2170,15 @@ class VueModel {
     }
 
     IsNumber(NumberValue, IsCanEmpty = true) {
-        if (!IsCanEmpty && (NumberValue == '' || NumberValue == undefined))
-            return false;
-        let RetTrue = !isNaN(NumberValue);
-        return RetTrue;
+        if (typeof NumberValue === 'number')
+            return true;
+        else if (typeof NumberValue === 'string') {
+            if (!IsCanEmpty && (NumberValue == '' || NumberValue == undefined))
+                return false;
+            let RetTrue = !isNaN(NumberValue);
+            return RetTrue;
+        }
+        return false;
     }
 
     IsBool(BoolValue) {
