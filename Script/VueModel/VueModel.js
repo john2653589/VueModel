@@ -1,5 +1,5 @@
 ﻿/**
- *  VueModel.js v1.9.10d
+ *  VueModel.js v1.9.11h
  *  From Rugal Tu
  *  Based on Vue.js v2.6.12、jQuery Library v3.5.1
  * */
@@ -26,6 +26,12 @@ class VueModel {
             DomEventFunc: {},
             TempResult: {},
             ErrorResult: {},
+            Format_Date: (DateValue, ResultKey) => {
+                if (DateValue != undefined) {
+                    let SetValue = DateValue.replaceAll('/', '-');
+                    this.UpdateVueModel(SetValue, ResultKey);
+                }
+            }
         };
         this.OnSuccess = function (Result) { };
         this.SuccessBackPage = function () { };
@@ -60,6 +66,7 @@ class VueModel {
     get Result() { return this.VueResult.Result; }
     set Result(SetResult) { this.VueResult.Result = SetResult; }
     get FileResult() { return this.VueResult.FileResult; }
+    set FileResult(_FileResult) { this.VueResult.FileResult = _FileResult; }
     get DomEventFunc() { return this.VueResult.DomEventFunc; }
     get TempResult() { return this.VueResult.TempResult; }
     get ErrorResult() { return this.VueResult.ErrorResult; }
@@ -138,7 +145,6 @@ class VueModel {
             if (Object.keys(this.VueOptions.methods).length > 0)
                 $.extend(this, this.VueOptions.methods);
         }
-
     }
 
     /**
@@ -355,45 +361,6 @@ class VueModel {
         return this;
     }
 
-    AddSubmit_Required(ColumnKey_Name = {}, RequiredCheck = this.DefaultRequiredCheck, WhenNextCheck = undefined, OnCheckFalse = this.DefaultOnCheckFalse, SubmitKey = 'all') {
-        SubmitKey = this.IsNotNullAndEmpty(SubmitKey) ? SubmitKey : 'all';
-
-        OnCheckFalse ??= this.DefaultOnCheckFalse;
-        RequiredCheck ??= this.DefaultRequiredCheck;
-
-        this.BaseAddSubmit_Required(undefined, ColumnKey_Name, RequiredCheck, WhenNextCheck, OnCheckFalse, SubmitKey);
-
-        return this;
-    }
-
-    AddSubmit_ThenRequired(FromColumnName, ColumnKey_Name = {}, RequiredCheck = this.DefaultRequiredCheck, WhenNextCheck = undefined, OnCheckFalse = this.DefaultOnCheckFalse, SubmitKey = 'all') {
-
-        SubmitKey = this.IsNotNullAndEmpty(SubmitKey) ? SubmitKey : 'all';
-
-        OnCheckFalse ??= this.DefaultOnCheckFalse;
-        RequiredCheck ??= this.DefaultRequiredCheck;
-
-        this.BaseAddSubmit_Required(FromColumnName, ColumnKey_Name, RequiredCheck, WhenNextCheck, OnCheckFalse, SubmitKey);
-
-        return this;
-    }
-
-    AddSubmit_Required_NumberNotZero(ColumnKey_Name = {}, RequiredCheck = this.RequiredCheck_NumberNotZero, WhenNextCheck = undefined, OnCheckFalse = this.DefaultOnCheckFalse, SubmitKey = 'all') {
-        return this.AddSubmit_Required(ColumnKey_Name, RequiredCheck, WhenNextCheck, OnCheckFalse, SubmitKey);
-    }
-
-    AddSubmit_Required_Number(ColumnKey_Name = {}, RequiredCheck = this.RequiredCheck_Number, WhenNextCheck = undefined, OnCheckFalse = this.DefaultOnCheckFalse, SubmitKey = 'all') {
-        return this.AddSubmit_Required(ColumnKey_Name, RequiredCheck, WhenNextCheck, OnCheckFalse, SubmitKey);
-    }
-
-    AddSubmit_Required_StringNull(ColumnKey_Name = {}, RequiredCheck = this.RequiredCheck_StringNullEmpty, WhenNextCheck = undefined, OnCheckFalse = this.DefaultOnCheckFalse, SubmitKey = 'all') {
-        return this.AddSubmit_Required(ColumnKey_Name, RequiredCheck, WhenNextCheck, OnCheckFalse, SubmitKey);
-    }
-
-    AddSubmit_Required_ArrayEmpty(ColumnKey_Name = {}, RequiredCheck = this.RequiredCheck_ArrayEmpty, WhenNextCheck = undefined, OnCheckFalse = this.DefaultOnCheckFalse, SubmitKey = 'all') {
-        return this.AddSubmit_Required(ColumnKey_Name, RequiredCheck, WhenNextCheck, OnCheckFalse, SubmitKey);
-    }
-
     /**
      * 加入 'Submit()' 成功後返回頁面
      * @param {any} Action 不得為 undefined
@@ -408,6 +375,303 @@ class VueModel {
     AddSubmit_File_SuccessBackPage(Action, Controller = undefined, Domain = undefined) {
         this.FileSuccessBackPage = () => this.ToUrl(Action, Controller, Domain);
         return this;
+    }
+    // #endregion
+
+    // #region Add Required
+
+    AddSubmit_Required(ColumnKey_Name = {}, RequiredCheck = this.DefaultRequiredCheck, WhenNextCheck = undefined, OnCheckFalse = this.OnCheckFalse_Default, SubmitKey = ['all']) {
+
+        OnCheckFalse ??= this.OnCheckFalse_Default;
+        RequiredCheck ??= this.DefaultRequiredCheck;
+
+        this.BaseAddSubmit_Required(undefined, ColumnKey_Name, RequiredCheck, WhenNextCheck, OnCheckFalse, SubmitKey);
+
+        return this;
+    }
+
+    AddSubmit_ThenRequired(FromColumnName, ColumnKey_Name = {}, RequiredCheck = this.DefaultRequiredCheck, WhenNextCheck = undefined, OnCheckFalse = this.OnCheckFalse_Default, SubmitKey = ['all']) {
+
+        OnCheckFalse ??= this.OnCheckFalse_Default;
+        RequiredCheck ??= this.DefaultRequiredCheck;
+
+        this.BaseAddSubmit_Required(FromColumnName, ColumnKey_Name, RequiredCheck, WhenNextCheck, OnCheckFalse, SubmitKey);
+
+        return this;
+    }
+
+    AddSubmit_Required_NumberNotZero(ColumnKey_Name = {}, RequiredCheck = this.RequiredCheck_NumberNotZero, WhenNextCheck = undefined, OnCheckFalse = this.OnCheckFalse_Default, SubmitKey = ['all']) {
+        return this.AddSubmit_Required(ColumnKey_Name, RequiredCheck, WhenNextCheck, OnCheckFalse, SubmitKey);
+    }
+
+    AddSubmit_Required_Number(ColumnKey_Name = {}, RequiredCheck = this.RequiredCheck_Number, WhenNextCheck = undefined, OnCheckFalse = this.OnCheckFalse_Default, SubmitKey = ['all']) {
+        return this.AddSubmit_Required(ColumnKey_Name, RequiredCheck, WhenNextCheck, OnCheckFalse, SubmitKey);
+    }
+
+    AddSubmit_Required_StringNull(ColumnKey_Name = {}, RequiredCheck = this.RequiredCheck_StringNullEmpty, WhenNextCheck = undefined, OnCheckFalse = this.OnCheckFalse_Default, SubmitKey = ['all']) {
+        return this.AddSubmit_Required(ColumnKey_Name, RequiredCheck, WhenNextCheck, OnCheckFalse, SubmitKey);
+    }
+
+    AddSubmit_Required_ArrayEmpty(ColumnKey_Name = {}, RequiredCheck = this.RequiredCheck_ArrayEmpty, WhenNextCheck = undefined, OnCheckFalse = this.OnCheckFalse_Default, SubmitKey = ['all']) {
+        return this.AddSubmit_Required(ColumnKey_Name, RequiredCheck, WhenNextCheck, OnCheckFalse, SubmitKey);
+    }
+
+    AddSubmit_Required_PhoneNumber_TW(ColumnKey_Name = {}, RequiredCheck = this.RequiredCheck_PhoneNumber_TW, WhenNextCheck = undefined, OnCheckFalse = this.OnCheckFalse_Format, SubmitKey = ['all']) {
+        return this.AddSubmit_Required(ColumnKey_Name, RequiredCheck, WhenNextCheck, OnCheckFalse, SubmitKey);
+    }
+
+    AddSubmit_Required_Email(ColumnKey_Name = {}, RequiredCheck = this.RequiredCheck_Email, WhenNextCheck = undefined, OnCheckFalse = this.OnCheckFalse_Format, SubmitKey = ['all']) {
+        return this.AddSubmit_Required(ColumnKey_Name, RequiredCheck, WhenNextCheck, OnCheckFalse, SubmitKey);
+    }
+
+    AddSubmit_Required_IdNumber_TW(ColumnKey_Name = {}, RequiredCheck = this.RequiredCheck_IdNumber_TW, WhenNextCheck = undefined, OnCheckFalse = this.OnCheckFalse_Format, SubmitKey = ['all']) {
+        return this.AddSubmit_Required(ColumnKey_Name, RequiredCheck, WhenNextCheck, OnCheckFalse, SubmitKey);
+    }
+
+    // #endregion
+
+    // #region Required Check
+
+    RequiredCheck_StringNullEmpty(Value, Data) {
+        return this.IsNotNullAndEmpty(Value);
+    }
+
+    RequiredCheck_NumberNotZero(Value, Data) {
+        if (this.IsNumber(Value, false)) {
+            let GetNumberValue = this.ConvertNumber(Value);
+            return GetNumberValue > 0;
+        }
+        return false;
+    }
+
+    RequiredCheck_Number(Value, Data) {
+        if (this.IsNumber(Value, false)) {
+            let GetNumberValue = this.ConvertNumber(Value);
+            return GetNumberValue >= 0;
+        }
+        return false;
+    }
+
+    RequiredCheck_ArrayEmpty(Value, Data) {
+        if (typeof (Value) === 'object' && Array.isArray(Value))
+            return Value.length > 0;
+        return false;
+    }
+
+    RequiredCheck_PhoneNumber_TW(Value, Data) {
+        if (!this.IsNotNullAndEmpty(Value))
+            return false;
+
+        if (Value.includes('-')) {
+            let NumberPart = Value.split('-');
+            if (NumberPart.length != 2)
+                return false;
+            if (NumberPart[0].length != 2 && NumberPart[0].length != 3)
+                return false;
+            if (NumberPart[0].length + NumberPart[1].length != 10)
+                return false;
+        }
+
+        return true;
+    }
+
+    RequiredCheck_Email(Value, Data) {
+        if (!Value.includes('@'))
+            return false;
+        return true;
+    }
+
+    RequiredCheck_IdNumber_TW(Value, Data) {
+        if (Value.match(/^[A-Z]{1}[1-2]{1}[0-9]{8}$/) == null)
+            return false;
+
+        let EnCodeDic = {
+            A: 10,
+            B: 11,
+            C: 12,
+            D: 13,
+            E: 14,
+            F: 15,
+            G: 16,
+            H: 17,
+            I: 34,
+            J: 18,
+            K: 19,
+            L: 20,
+            M: 21,
+            N: 22,
+            O: 35,
+            P: 23,
+            Q: 24,
+            R: 25,
+            S: 26,
+            T: 27,
+            U: 28,
+            V: 29,
+            W: 32,
+            X: 30,
+            Y: 31,
+            Z: 33
+        };
+        let GetEnChar = Value[0];
+        let GetEnCode = EnCodeDic[GetEnChar];
+
+        Value = Value.replace(GetEnChar, GetEnCode);
+        let WeightDic = [1, 9, 8, 7, 6, 5, 4, 3, 2, 1, 1];
+        let Grade = 0;
+        for (let i = 0; i < Value.length; i++) {
+            let GetWeight = WeightDic[i];
+            let GetChar = Number(Value[i]);
+            Grade += GetWeight * GetChar;
+        }
+        if (Grade % 10 != 0)
+            return false;
+
+        return true;
+    }
+
+    DefaultRequiredCheck(Value) {
+        if (Value == undefined || Value == null)
+            return false;
+
+        if (this.IsNumber(Value, false)) {
+            Value = this.ConvertNumber(Value);
+            if (typeof (Value) === 'number')
+                return this.RequiredCheck_NumberNotZero(Value);
+        }
+
+        if (typeof (Value) === 'string')
+            return this.RequiredCheck_StringNullEmpty(Value);
+
+        if (typeof (Value) === 'object' && Array.isArray(Value))
+            return this.RequiredCheck_ArrayEmpty(Value);
+
+        return true;
+    }
+
+    OnCheckFalse_Default(ColumnName) {
+        alert(`「${ColumnName}」為必填欄位`);
+    }
+
+    OnCheckFalse_Format(ColumnName) {
+        alert(`「${ColumnName}」格式錯誤`);
+    }
+
+    Check_SubmitRequired(SendData, SubmitKey = undefined) {
+
+        let RequiredDic = this.SubmitRequiredDic;
+        if (SubmitKey != undefined && SubmitKey in RequiredDic) {
+            if (!this.BaseCheck_SubmitRequired(SendData, SubmitKey))
+                return false;
+        }
+
+        if ('all' in RequiredDic) {
+            if (!this.BaseCheck_SubmitRequired(SendData, 'all'))
+                return false;
+        }
+
+        return true;
+    }
+
+    BaseCheck_SubmitRequired(SendData, SubmitKey) {
+
+        let RequiredDic = this.SubmitRequiredDic;
+        let GetRequiredDic = RequiredDic[SubmitKey];
+
+        let AllKeys = Object.keys(GetRequiredDic);
+        for (let i = 0; i < AllKeys.length; i++) {
+            let ColumnKey = AllKeys[i];
+            let GetRequiredModel = GetRequiredDic[ColumnKey];
+            let ColumnName = GetRequiredModel['ColumnName'];
+            let FromColumnName = GetRequiredModel['FromColumnName'];
+            let RequiredCheck = GetRequiredModel['RequiredCheck'];
+            let OnCheckFalse = GetRequiredModel['OnCheckFalse'];
+            let WhenNextCheck = GetRequiredModel['WhenNextCheck'];
+
+            if (FromColumnName != undefined)
+                continue;
+
+            if (SendData == undefined) {
+                OnCheckFalse.call(this, ColumnName);
+                return false;
+            }
+
+            if (!(ColumnKey in SendData)) {
+                OnCheckFalse.call(this, ColumnName);
+                return false;
+            }
+
+            let GetDataValue = SendData[ColumnKey];
+            if (!RequiredCheck.call(this, GetDataValue, SendData)) {
+                OnCheckFalse.call(this, ColumnName);
+                return false;
+            }
+
+            if (WhenNextCheck != undefined && WhenNextCheck.call(this, SendData)) {
+                if (!this.RCS_BaseCheck_ThenRequired(ColumnKey, SendData, SubmitKey)) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    RCS_BaseCheck_ThenRequired(FindFromColumnName, SendData, SubmitKey) {
+        let RequiredDic = this.SubmitRequiredDic[SubmitKey];
+        let AllKeys = Object.keys(RequiredDic);
+        for (let i = 0; i < AllKeys.length; i++) {
+            let ColumnKey = AllKeys[i];
+            let CheckObject = RequiredDic[ColumnKey];
+            let ColumnName = CheckObject['ColumnName'];
+            let FromColumnName = CheckObject['FromColumnName'];
+            let RequiredCheck = CheckObject['RequiredCheck'];
+            let OnCheckFalse = CheckObject['OnCheckFalse'];
+
+            let CheckValue = SendData[ColumnKey];
+            if (FromColumnName == FindFromColumnName) {
+                if (RequiredCheck.call(this, CheckValue)) {
+                    if (!this.RCS_BaseCheck_ThenRequired(ColumnKey, CheckValue, SubmitKey)) {
+                        return false;
+                    }
+                }
+                else {
+                    OnCheckFalse.call(this, ColumnName);
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    BaseAddSubmit_Required(FromColumnName, ColumnKey_Name, RequiredCheck, WhenNextCheck, OnCheckFalse, SubmitKeyArray) {
+
+        if (!Array.isArray(SubmitKeyArray)) {
+            if (!this.IsNotNullAndEmpty(SubmitKeyArray))
+                SubmitKeyArray = 'all';
+
+            SubmitKeyArray = [SubmitKeyArray];
+        }
+        for (let i = 0; i < SubmitKeyArray.length; i++) {
+            let SubmitKey = SubmitKeyArray[i];
+
+            let ColumnNameDic = this.SubmitRequiredDic;
+            if (!(SubmitKey in ColumnNameDic))
+                ColumnNameDic[SubmitKey] = {};
+
+            let GetColumnNameDic = ColumnNameDic[SubmitKey];
+            let AllKeys = Object.keys(ColumnKey_Name);
+            for (let i = 0; i < AllKeys.length; i++) {
+                let ColumnKey = AllKeys[i];
+                let ColumnName = ColumnKey_Name[ColumnKey];
+                GetColumnNameDic[ColumnKey] = {
+                    ColumnName,
+                    OnCheckFalse,
+                    RequiredCheck,
+                    FromColumnName,
+                    WhenNextCheck,
+                };
+            }
+        }
     }
     // #endregion
 
@@ -445,9 +709,11 @@ class VueModel {
         let ReplaceKey = this.ToReplaceObjectId(ResultKey);
         ObjectId = this.ToJQueryName(ObjectId);
         let JObj = $(ObjectId);
+        if (JObj.attr('type') == 'date') {
+            JObj.attr(':formatter', `Format_Date(${ReplaceKey}, '${ReplaceKey}')`);
+        }
         let VModelAttr = IsNumber ? 'v-model.number' : 'v-model';
         JObj.attr(VModelAttr, ReplaceKey);
-
         return this;
     }
 
@@ -596,6 +862,18 @@ class VueModel {
         this.AddV_Bind(ObjectId, BindName, `'${FullUrl}'`);
         return this;
     }
+
+    AddV_BindUrl_Cus(ObjectId, BindName, Url, CusParam = undefined, IsConvertUrl = true) {
+
+        if (IsConvertUrl)
+            Url = this.ConvertToUrl(Url);
+
+        let FullUrl = `${Url}`;
+
+        this.AddV_Bind(ObjectId, BindName, `'${FullUrl}?' + ${CusParam}`);
+        return this;
+    }
+
 
     /**
      * 將 'v-for:{ForKey} in {Key}' Vue屬性加入至 ObjectId DOM
@@ -992,8 +1270,8 @@ class VueModel {
         if (this.IsNotNullAndEmpty(UploadUrl))
             this.AddSubmit(ResultKey, UploadUrl);
 
-        let SetResult = this.FileResult;
         this.AddV_On_Change(InputId, (e) => {
+            let SetResult = this.FileResult;
             let Files = e.target.files;
             if (SetResult[ResultKey] == undefined)
                 SetResult[ResultKey] = {};
@@ -1135,7 +1413,7 @@ class VueModel {
         return this;
     }
 
-    AddAutoBind_Text(AutoBindKeys = ['txt.'], ResultKey = undefined) {
+    AddAutoBind_Text(AutoBindKeys = ['txt.'], ResultKey = undefined, BindKey = undefined) {
         ResultKey ??= 'Result';
         if (typeof AutoBindKeys === 'string')
             AutoBindKeys = [AutoBindKeys];
@@ -1148,9 +1426,31 @@ class VueModel {
                 let Id = GetText.id;
 
                 let GetSplitId = Id.split(`${AutoBindKey}`)[1];
-                let GetResultKey = `${ResultKey}.${GetSplitId}`;
+                let GetResultKey = BindKey ?? `${ResultKey}.${GetSplitId}`;
 
                 this.AddV_Text(Id, GetResultKey);
+            }
+        }
+
+        return this;
+    }
+
+    AddAutoBind_Bind(BindName, AutoBindKeys = ['bind.'], ResultKey = undefined) {
+        ResultKey ??= 'Result';
+        if (typeof AutoBindKeys === 'string')
+            AutoBindKeys = [AutoBindKeys];
+
+        for (let Idx in AutoBindKeys) {
+            let AutoBindKey = AutoBindKeys[Idx];
+            let AllText = $(`[id*='${AutoBindKey}']`);
+            for (let Idx = 0; Idx < AllText.length; Idx++) {
+                let GetText = AllText[Idx];
+                let Id = GetText.id;
+
+                let GetSplitId = Id.split(`${AutoBindKey}`)[1];
+                let GetResultKey = ResultKey ?? `${ResultKey}.${GetSplitId}`;
+
+                this.AddV_Bind(Id, BindName, GetResultKey);
             }
         }
 
@@ -1447,8 +1747,8 @@ class VueModel {
                 if (!MuteRequestErrorAlert)
                     alert('Request 錯誤');
             },
-            complete: function () {
-                OnComplate?.call(Caller);
+            complete: function (ApiRet) {
+                OnComplate?.call(Caller, ApiRet.responseJSON);
             },
             headers: {
                 Authorization: this.GetToken == undefined ? 'null' : this.GetToken(),
@@ -1458,7 +1758,7 @@ class VueModel {
         return this;
     }
 
-    Submit_File(Key, SendParam = undefined, _OnSuccess = undefined, _OnError = undefined, _OnComplate = undefined) {
+    Submit_File(Key, SendParam = undefined, _OnSuccess = undefined, _OnError = undefined, _OnComplate = undefined, AlwaysPost = false, MuteRequestErrorAlert = false) {
 
         let SuccessBackPage = this.FileSuccessBackPage;
         let SendData, OnSuccess, OnError, OnComplate, SendUrl;
@@ -1481,9 +1781,11 @@ class VueModel {
             SendUrl += `?${UrlParam}`;
         }
 
-        let IsCheckRequired = this.Check_SubmitRequired(SendData, Key);
-        if (!IsCheckRequired)
+        let IsCheckRequired = this.IsHasFile(ReplaceKey);
+        if (!IsCheckRequired && !AlwaysPost) {
+            OnComplate?.call(Caller);
             return this;
+        }
 
         let FileModel = this.ConvertSendFile(Key, SendData);
 
@@ -1503,7 +1805,8 @@ class VueModel {
             },
             error: function (Error) {
                 OnError?.call(Caller, Error);
-                alert('上傳失敗');
+                if (!MuteRequestErrorAlert)
+                    alert('上傳失敗');
             },
             complete: function () {
                 OnComplate?.call(Caller);
@@ -1516,29 +1819,30 @@ class VueModel {
         return this;
     }
 
-    Submit_FileMult(KeyParam, _OnComplate = undefined) {
-        this.RCS_Submit_FileMult(KeyParam, 0, _OnComplate);
+    Submit_FileMult(KeyParam, _OnComplate = undefined, AlwaysPost = false, MuteRequestErrorAlert = false) {
+        this.RCS_Submit_FileMult(KeyParam, 0, _OnComplate, AlwaysPost, MuteRequestErrorAlert);
         return this;
     }
 
-    RCS_Submit_FileMult(KeyParam, SubmitIndex, _OnComplate = undefined) {
+    RCS_Submit_FileMult(KeyParam, SubmitIndex, _OnComplate = undefined, AlwaysPost = false, MuteRequestErrorAlert = false) {
         let AllKey = Object.keys(KeyParam);
         if (SubmitIndex < AllKey.length) {
             let Key = AllKey[SubmitIndex];
             let Param = KeyParam[Key];
-            if (this.IsHasFile(Key)) {
+            let ReplaceKey = this.ToReplaceObjectId(Key);
+            if (this.IsHasFile(ReplaceKey) || AlwaysPost) {
                 this.Submit_File(Key, Param, () => {
-                    this.RCS_Submit_FileMult(KeyParam, SubmitIndex + 1, _OnComplate);
-                });
+                    this.RCS_Submit_FileMult(KeyParam, SubmitIndex + 1, _OnComplate, AlwaysPost, MuteRequestErrorAlert);
+                }, undefined, undefined, AlwaysPost, MuteRequestErrorAlert);
             }
             else
-                this.RCS_Submit_FileMult(KeyParam, SubmitIndex + 1, _OnComplate);
+                this.RCS_Submit_FileMult(KeyParam, SubmitIndex + 1, _OnComplate, AlwaysPost, MuteRequestErrorAlert);
         }
         else if (_OnComplate != undefined)
             _OnComplate();
     }
 
-    Submit_File_Base(Key, SendData, SendParam = undefined, _OnSuccess = undefined, _OnError = undefined, _OnComplate = undefined) {
+    Submit_File_Base(Key, SendData, SendParam = undefined, _OnSuccess = undefined, _OnError = undefined, _OnComplate = undefined, MuteRequestErrorAlert = false) {
 
         let SuccessBackPage = this.FileSuccessBackPage;
         let OnSuccess, OnError, OnComplate, SendUrl;
@@ -1546,9 +1850,9 @@ class VueModel {
         let ReplaceKey = this.ToReplaceObjectId(Key);
         let Param = this.SubmitUrl[ReplaceKey];
 
-        OnSuccess = _OnSuccess ?? Param.OnSuccess;
-        OnError = _OnError ?? Param.OnError;
-        OnComplate = _OnComplate ?? Param.OnComplate;
+        OnSuccess = _OnSuccess ?? Param?.OnSuccess;
+        OnError = _OnError ?? Param?.OnError;
+        OnComplate = _OnComplate ?? Param?.OnComplate;
 
         Key ??= this.ElementName;
 
@@ -1561,8 +1865,18 @@ class VueModel {
         }
 
         let FileModel = new FormData();
-        if (SendData != undefined)
-            FileModel.append(Key, SendData);
+        if (SendData != undefined) {
+            if (Array.isArray(SendData)) {
+                for (let i = 0; i < SendData.length; i++) {
+                    let GetFileData = SendData[i];
+                    FileModel.append(Key, GetFileData);
+                }
+            }
+            else {
+                FileModel.append(Key, SendData);
+            }
+        }
+
 
         let SuccessCheck = this.SubmitSuccessCheck;
         let SubmitOptions = {
@@ -1580,7 +1894,8 @@ class VueModel {
             },
             error: function (Error) {
                 OnError?.call(Caller, Error);
-                alert('上傳失敗');
+                if (!MuteRequestErrorAlert)
+                    alert('上傳失敗');
             },
             complete: function () {
                 OnComplate?.call(Caller);
@@ -1593,17 +1908,22 @@ class VueModel {
         return this;
     }
 
-    Submit_FileMult_Base(Key, FileDataArray, SendParamArray = undefined, _OnComplate = undefined) {
-        this.RCS_Submit_FileMult_Base(Key, FileDataArray, SendParamArray, 0, _OnComplate);
+    Submit_FileMult_Base(Key, FileDataArray, SendParamArray = undefined, _OnComplate = undefined, _CheckSuccess = undefined) {
+        this.RCS_Submit_FileMult_Base(Key, FileDataArray, SendParamArray, 0, _OnComplate, _CheckSuccess);
         return this;
     }
 
-    RCS_Submit_FileMult_Base(Key, FileDataArray, SendParamArray, SubmitIndex, _OnComplate = undefined) {
+    RCS_Submit_FileMult_Base(Key, FileDataArray, SendParamArray, SubmitIndex, _OnComplate = undefined, _CheckSuccess = undefined) {
         if (SubmitIndex < FileDataArray.length) {
             let FileData = FileDataArray[SubmitIndex];
             let SendParam = SendParamArray[SubmitIndex];
-            this.Submit_File_Base(Key, FileData, SendParam, () => {
-                this.RCS_Submit_FileMult_Base(Key, FileDataArray, SendParamArray, SubmitIndex + 1, _OnComplate);
+            this.Submit_File_Base(Key, FileData, SendParam, (ApiRet) => {
+                if (_CheckSuccess != undefined) {
+                    if (_CheckSuccess(ApiRet) != true) {
+                        return;
+                    }
+                }
+                this.RCS_Submit_FileMult_Base(Key, FileDataArray, SendParamArray, SubmitIndex + 1, _OnComplate, _CheckSuccess);
             });
         }
         else if (_OnComplate != undefined)
@@ -1889,164 +2209,6 @@ class VueModel {
 
     // #endregion
 
-    // #region Required Check
-
-    RequiredCheck_StringNullEmpty(Value, Data) {
-        return this.IsNotNullAndEmpty(Value);
-    }
-
-    RequiredCheck_NumberNotZero(Value, Data) {
-        if (typeof (Value) === 'number')
-            return Value > 0;
-        return false;
-    }
-
-    RequiredCheck_Number(Value, Data) {
-        if (typeof (Value) === 'number')
-            return Value >= 0;
-        return false;
-    }
-
-    RequiredCheck_ArrayEmpty(Value, Data) {
-        if (typeof (Value) === 'object' && Array.isArray(Value))
-            return Value.length > 0;
-        return false;
-    }
-
-    DefaultRequiredCheck(Value) {
-        if (Value == undefined || Value == null)
-            return false;
-
-        if (this.IsNumber(Value, false)) {
-            Value = this.ConvertNumber(Value);
-            if (typeof (Value) === 'number')
-                return this.RequiredCheck_NumberNotZero(Value);
-        }
-
-        if (typeof (Value) === 'string')
-            return this.RequiredCheck_StringNullEmpty(Value);
-
-        if (typeof (Value) === 'object' && Array.isArray(Value))
-            return this.RequiredCheck_ArrayEmpty(Value);
-
-        return true;
-    }
-
-    DefaultOnCheckFalse(ColumnName) {
-        alert(`「${ColumnName}」為必填欄位`);
-    }
-
-    Check_SubmitRequired(SendData, SubmitKey = undefined) {
-
-        let RequiredDic = this.SubmitRequiredDic;
-        if (SubmitKey != undefined && SubmitKey in RequiredDic) {
-            if (!this.BaseCheck_SubmitRequired(SendData, SubmitKey))
-                return false;
-        }
-
-        if ('all' in RequiredDic) {
-            if (!this.BaseCheck_SubmitRequired(SendData, 'all'))
-                return false;
-        }
-
-        return true;
-    }
-
-    BaseCheck_SubmitRequired(SendData, SubmitKey) {
-
-        let RequiredDic = this.SubmitRequiredDic;
-        let GetRequiredDic = RequiredDic[SubmitKey];
-
-        let AllKeys = Object.keys(GetRequiredDic);
-        for (let i = 0; i < AllKeys.length; i++) {
-            let ColumnKey = AllKeys[i];
-            let GetRequiredModel = GetRequiredDic[ColumnKey];
-            let ColumnName = GetRequiredModel['ColumnName'];
-            let FromColumnName = GetRequiredModel['FromColumnName'];
-            let RequiredCheck = GetRequiredModel['RequiredCheck'];
-            let OnCheckFalse = GetRequiredModel['OnCheckFalse'];
-            let WhenNextCheck = GetRequiredModel['WhenNextCheck'];
-
-            if (FromColumnName != undefined)
-                continue;
-
-            if (SendData == undefined) {
-                OnCheckFalse.call(this, ColumnName);
-                return false;
-            }
-
-            if (!(ColumnKey in SendData)) {
-                OnCheckFalse.call(this, ColumnName);
-                return false;
-            }
-
-            let GetDataValue = SendData[ColumnKey];
-            if (!RequiredCheck.call(this, GetDataValue, SendData)) {
-                OnCheckFalse.call(this, ColumnName);
-                return false;
-            }
-
-            if (WhenNextCheck != undefined && WhenNextCheck.call(this, SendData)) {
-                if (!this.RCS_BaseCheck_ThenRequired(ColumnKey, SendData, SubmitKey)) {
-                    return false;
-                }
-            }
-
-        }
-        return true;
-    }
-
-    RCS_BaseCheck_ThenRequired(FindFromColumnName, SendData, SubmitKey) {
-        let RequiredDic = this.SubmitRequiredDic[SubmitKey];
-        let AllKeys = Object.keys(RequiredDic);
-        for (let i = 0; i < AllKeys.length; i++) {
-            let ColumnKey = AllKeys[i];
-            let CheckObject = RequiredDic[ColumnKey];
-            let ColumnName = CheckObject['ColumnName'];
-            let FromColumnName = CheckObject['FromColumnName'];
-            let RequiredCheck = CheckObject['RequiredCheck'];
-            let OnCheckFalse = CheckObject['OnCheckFalse'];
-
-            let CheckValue = SendData[ColumnKey];
-            if (FromColumnName == FindFromColumnName) {
-                if (RequiredCheck.call(this, CheckValue)) {
-                    if (!this.RCS_BaseCheck_ThenRequired(ColumnKey, CheckValue, SubmitKey)) {
-                        return false;
-                    }
-                }
-                else {
-                    OnCheckFalse.call(this, ColumnName);
-                    return false;
-                }
-            }
-        }
-        return true;
-    }
-
-    BaseAddSubmit_Required(FromColumnName, ColumnKey_Name, RequiredCheck, WhenNextCheck, OnCheckFalse, SubmitKey) {
-
-        let ColumnNameDic = this.SubmitRequiredDic;
-        if (!(SubmitKey in ColumnNameDic))
-            ColumnNameDic[SubmitKey] = {};
-
-        let GetColumnNameDic = ColumnNameDic[SubmitKey];
-        let AllKeys = Object.keys(ColumnKey_Name);
-        for (let i = 0; i < AllKeys.length; i++) {
-            let ColumnKey = AllKeys[i];
-            let ColumnName = ColumnKey_Name[ColumnKey];
-            GetColumnNameDic[ColumnKey] = {
-                ColumnName,
-                OnCheckFalse,
-                RequiredCheck,
-                FromColumnName,
-                WhenNextCheck,
-            };
-        }
-    }
-
-
-    // #endregion
-
     // #region Process DomEvent
 
     CreateDomEvent(ObjectId, EventFuncKey) {
@@ -2219,7 +2381,6 @@ class VueModel {
                                 }
                             }
                         }
-
                     }
                 }
             }
